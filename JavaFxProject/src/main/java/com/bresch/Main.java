@@ -1,4 +1,4 @@
-package application;
+package com.bresch;
 
 public class Main {
 	

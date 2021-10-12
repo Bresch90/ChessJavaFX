@@ -1,4 +1,4 @@
-package application;
+package com.bresch;
 
 import javafx.application.Application;
 import javafx.scene.Scene;

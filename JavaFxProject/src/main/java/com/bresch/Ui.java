@@ -1,4 +1,4 @@
-package application;
+package com.bresch;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,7 +34,6 @@ public class Ui extends Application {
 	private static Button draggingButton;
 	Button[][] buttons = new Button[8][8];
 	static BoardManager boardManager = new BoardManager();
-	
 	public static void go(String[] args) {
 		launch(args);
 	}

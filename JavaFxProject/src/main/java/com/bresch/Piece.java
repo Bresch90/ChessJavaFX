@@ -1,4 +1,4 @@
-package application;
+package com.bresch;
 import java.util.Arrays;
 
 public class Piece {
