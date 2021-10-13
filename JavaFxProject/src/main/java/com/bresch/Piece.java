@@ -1,4 +1,5 @@
 package com.bresch;
+import java.net.URL;
 import java.util.Arrays;
 
 public class Piece {
@@ -26,7 +27,10 @@ public class Piece {
 			case "pawn":	kind = "p"; break;
 			default: throw new IllegalArgumentException("Unexpected value: " + kind);
 		}
-		this.imagePath = "File:" + kind + color + "t60.png";
+		
+		//this.imagePath =  "File:" + kind + color + "t60.png";
+		//Changed to work with maven resources
+		this.imagePath = Piece.class.getResource("/" + kind + color + "t60.png").toString();
 	}
 
 	public int getTeam() {
