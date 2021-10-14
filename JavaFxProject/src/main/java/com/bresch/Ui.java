@@ -35,6 +35,7 @@ public class Ui extends Application {
 	Button[][] buttons = new Button[8][8];
 	static BoardManager boardManager = new BoardManager();
 	public static void go(String[] args) {
+		System.out.println("hello");
 		launch(args);
 	}
 
