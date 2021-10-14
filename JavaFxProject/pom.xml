@@ -5,6 +5,9 @@
 	<groupId>JavaFxProjectMaven</groupId>
 	<artifactId>ChessJavaFX</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 	<build>
 		<plugins>
 			<plugin>
@@ -15,7 +18,6 @@
 				</configuration>
 
 			</plugin>
-
 			<plugin>
 				<groupId>org.openjfx</groupId>
 				<artifactId>javafx-maven-plugin</artifactId>
