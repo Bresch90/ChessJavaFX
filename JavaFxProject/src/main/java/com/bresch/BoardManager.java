@@ -9,6 +9,7 @@ import java.util.Iterator;
 //TODO undo move?
 //TODO save board?
 //TODO show gameround etc?
+//TODO Ai moves?
 
 
 public class BoardManager {
