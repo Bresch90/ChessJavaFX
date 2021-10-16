@@ -55,7 +55,6 @@ public class Ui extends Application {
 //			BorderStroke?
 //			vbox.getChildren().add(infoLabel); // why doesnt work? vbox no good?
 //			VBox should have worked? but maybe can fix? Maybe put in borderpane?
-			
 			Scene scene = new Scene(root, 400, 425);
 			
 			this.setNewGame(grid);
