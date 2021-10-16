@@ -54,6 +54,7 @@ public class Ui extends Application {
 //			infoLabel.setBorder(new Border()));
 //			BorderStroke?
 //			vbox.getChildren().add(infoLabel); // why doesnt work? vbox no good?
+//			VBox should have worked? but maybe can fix? Maybe put in borderpane?
 			Scene scene = new Scene(root, 400, 425);
 			
 			this.setNewGame(grid);
@@ -116,7 +117,6 @@ public class Ui extends Application {
 		for (int i = 0; i < buttons.length; i++) {
 			for (int j = 0; j < buttons[i].length; j++) {
 				//Set piece selection
-				//TODO Set Event for clicking button aka "Selecting"
 				buttons[i][j].setOnAction(e -> {
 					Button button = (Button)e.getSource();
 					setMoveColours(button);
