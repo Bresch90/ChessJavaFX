@@ -7,8 +7,10 @@ public class Piece {
 	private String kind;
 	private String imagePath;
 	private String loc;
+	private boolean firstMove;
 	
 	public Piece(int team, String kind, int x, int y) {
+		this.firstMove = true;
 		this.team = team;
 		String color = (team == 0 ? "l" : "d");
 		this.loc = x + " " + y;
@@ -50,6 +52,12 @@ public class Piece {
 
 	public void setLoc(int x, int y) {
 		this.loc = x + " " + y;
+	}
+	public boolean getFirstMove() {
+		return firstMove;
+	}
+	public void setFirstMove() {
+		firstMove = false;
 	}
 	//TODO this is never used. how should locations be dealt with?
 	public void setLoc(String x, String y) {

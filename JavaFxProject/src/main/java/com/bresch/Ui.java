@@ -160,11 +160,13 @@ public class Ui extends Application {
 		            	
 		            	draggingButton.setGraphic(null);
 		                e.setDropCompleted(true);
+		                
+			            draggingButton = null;
+			            boardManager.nextRound();
+			            boardManager.updateMoves();
+			            resetColours();
 		            }
-		            draggingButton = null;
-		            boardManager.nextRound();
-		            boardManager.updateMoves();
-		            resetColours();
+
 		            
 		        });
 		              

@@ -71,6 +71,7 @@ public class BoardManager {
 	public void movePiece(String locationString1, String LocationString2) {
 		locations.put(locationString1, locations.get(LocationString2));
 		locations.remove(LocationString2);
+		locations.get(locationString1).setFirstMove();
 	}
 
 	public ArrayList<String> getValidMoves(String locationString) {
@@ -123,6 +124,9 @@ public class BoardManager {
 			case "pawn": {
 				int team = locations.get(locationString).getTeam();
 				int x = loc[0] + 0;
+				if (locations.get(locationString).getFirstMove()) {
+					//TODO make for first move move two etc. Ressaint dont know how to..but yea...
+				}
 				int y = loc[1] + (locations.get(locationString).getTeam() == 1 ? -1 : 1);
 				if (x < 0 || x > 7 || y < 0 || y > 7)
 					break; //is this a problem??
