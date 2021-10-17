@@ -1,5 +1,4 @@
 package com.bresch;
-import java.net.URL;
 import java.util.Arrays;
 
 public class Piece {
@@ -52,6 +51,7 @@ public class Piece {
 	public void setLoc(int x, int y) {
 		this.loc = x + " " + y;
 	}
+	//TODO this is never used. how should locations be dealt with?
 	public void setLoc(String x, String y) {
 		this.setLoc(Integer.parseInt(x), Integer.parseInt(y));
 	}

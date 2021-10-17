@@ -6,8 +6,8 @@ public class Main {
 		
 		
 		//DragToCanvas.main(args);
-		
-		Ui.go(args);
+		Ui ui = new Ui();;
+		ui.go(args);
 		
 	}
 	

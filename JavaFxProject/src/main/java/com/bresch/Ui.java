@@ -22,21 +22,23 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 public class Ui extends Application {
 	
 	private static Button draggingButton;
-	Button[][] buttons = new Button[8][8];
-	static BoardManager boardManager = new BoardManager();
-	public static void go(String[] args) {
+	static Button[][] buttons = new Button[8][8];
+	private BoardManager boardManager = new BoardManager(this);
+	public void go(String[] args) {
 		System.out.println("hello");
-		launch(args);
+		launch();
 	}
 
 	@Override
@@ -44,13 +46,15 @@ public class Ui extends Application {
 		try {
 			BorderPane root = new BorderPane();
 			GridPane grid = new GridPane();
-			root.getChildren().add(grid);
+			root.setCenter(grid); //getChildren().add(grid);
 			//TODO show label with status messsages
 //			VBox vbox = new VBox();
 //			vbox.getChildren().add( grid);
 //			root.getChildren().add(vbox);
-			Label infoLabel = new Label("hello where am I?");
-			infoLabel.setMinSize(0, 70);
+			Label infoLabel = new Label("Hello, White starts.");
+			infoLabel.setMinSize(20, 70);
+			infoLabel.setTranslateY(-23);
+			infoLabel.setFont(new Font(20));
 //			infoLabel.setBorder(new Border()));
 //			BorderStroke?
 //			vbox.getChildren().add(infoLabel); // why doesnt work? vbox no good?
@@ -58,7 +62,7 @@ public class Ui extends Application {
 			Scene scene = new Scene(root, 400, 425);
 			
 			this.setNewGame(grid);
-			grid.add(infoLabel, 0, 8);
+			root.setBottom(infoLabel);//, 0, 8);
 			
 			//TODO get resizing to work pls
 //			for (int j = 0; j < 8; j++) {
@@ -92,11 +96,11 @@ public class Ui extends Application {
 				String locationString = String.valueOf(i) + " " + String.valueOf(j);
 				Button button = buttons[i][j] = new Button(locationString);	
 				//TODO uncomment Transparency for location text
-				button.setStyle("-fx-background-color: " + (c % 2 == 0 ? "beige" : "white"));//+ "; -fx-text-fill: transparent");
+				button.setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white"));//+ "; -fx-text-fill: transparent");
 				//TODO Make resizable pls...
 				button.setMinSize(50, 50);
 //			    buttons[i][j].setPrefSize(scene.getWidth()/8, scene.getHeight()/8);
-				button.setMaxSize(400, 400);
+				button.setMaxSize(50, 50);
 				if (boardManager.isPieceAtLocation(locationString)) {
 					ImageView imageView = new ImageView(new Image(boardManager.getPiece(locationString).getImagePath()));
 //					imageView.fitHeightProperty().bind(buttons[i][j].heightProperty());;
@@ -168,11 +172,13 @@ public class Ui extends Application {
 		}
 	}
 	
-	public static  void changeToQueen(String locationString) {
+	public void changeToQueen(String locationString) {
 		
 		int[] location = Arrays.stream(locationString.split(" ")).mapToInt(Integer::parseInt).toArray();
 		Piece queen = new Piece(boardManager.getPiece(locationString).getTeam(), "queen", location[0], location[1]);
 		boardManager.setQueenLocation(locationString, queen);
+		buttons[location[0]][location[1]].setGraphic(new ImageView(new Image(boardManager.getPiece(draggingButton.getText()).getImagePath())));
+    	//buttons[location[0]][location[1]].setContentDisplay(ContentDisplay.CENTER);
 	}
 	
 	private void setMoveColours(Button button) {
@@ -187,7 +193,7 @@ public class Ui extends Application {
 	private void resetColours() {
 		for (int i = 0, c = 1; i < buttons.length; i++) {
 			for (int j = 0; j < buttons[i].length; j++) {
-				buttons[i][j].setStyle("-fx-background-color: " + (c % 2 == 0 ? "beige" : "white"));
+				buttons[i][j].setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white"));
 				c++;
 			}
 			c++;

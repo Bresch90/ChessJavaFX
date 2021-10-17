@@ -15,15 +15,17 @@ import java.util.Iterator;
 public class BoardManager {
 	HashMap<String, Piece> locations;
 	HashMap<String, ArrayList<String>> validMoves;
+	Ui ui;
 	
 	int gameRound;
 	
 	
-	public BoardManager() {
+	public BoardManager(Ui ui) {
+		this.ui = ui;
 		this.locations = new HashMap<>();
 		this.validMoves = new HashMap<>();
 		this.gameRound = 0;
-	}
+		}
 
 	public void newGameSpawn() {
 		locations.clear();
@@ -173,9 +175,10 @@ public class BoardManager {
 				int team = piece.getTeam();
 				int y = Integer.parseInt(locationString.split(" ")[1]);
 				if (team == 1 && y == 0) {
-					Ui.changeToQueen(locationString);
+					ui.changeToQueen(locationString);
 					System.out.println("He should be black queeen!!!!");
 				} else if (team == 0 && y == 7) {
+					ui.changeToQueen(locationString);
 					System.out.println("He should be white queeen!!!!");
 				}
 			}
