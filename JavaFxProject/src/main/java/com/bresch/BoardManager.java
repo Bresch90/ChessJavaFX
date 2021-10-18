@@ -32,34 +32,34 @@ public class BoardManager {
 		gameRound = 0;
 		
 		for (int i = 0; i < 8; i++) {
-			locations.put(i + " " + 1, new Pawn(0, "pawn", i, 1));
-			locations.put(i + " " + 6, new Pawn(1, "pawn", i, 6));
+			locations.put(i + " " + 1, new Pawn(0, "pawn", this));
+			locations.put(i + " " + 6, new Pawn(1, "pawn", this));
 			Piece piece1 = null;
 			Piece piece2 = null;
 			String kind;
 			switch (i) {
 			case 0:
 			case 7:	kind = "rook";
-				piece1 = new Rook(0, kind, i, 0);
-				piece2 = new Rook(1, kind, i, 7);
+				piece1 = new Rook(0, kind, this);
+				piece2 = new Rook(1, kind, this);
 				break;
 			case 1:
 			case 6:	kind = "knight";
-				piece1 = new Knight(0, kind, i, 0);
-				piece2 = new Knight(1, kind, i, 7);
+				piece1 = new Knight(0, kind, this);
+				piece2 = new Knight(1, kind, this);
 				break;
 			case 2:
 			case 5:	kind = "bishop";
-				piece1 = new Bishop(0, kind, i, 0);
-				piece2 = new Bishop(1, kind, i, 7);
+				piece1 = new Bishop(0, kind, this);
+				piece2 = new Bishop(1, kind, this);
 				break;
 			case 3:	kind = "queen";	
-				piece1 = new Queen(0, kind, i, 0);
-				piece2 = new Queen(1, kind, i, 7);
+				piece1 = new Queen(0, kind, this);
+				piece2 = new Queen(1, kind, this);
 				break;
 			case 4:	kind = "king";
-				piece1 = new King(0, kind, i, 0);
-				piece2 = new King(1, kind, i, 7);
+				piece1 = new King(0, kind, this);
+				piece2 = new King(1, kind, this);
 				break;
 			default:
 				throw new IllegalArgumentException("Unexpected value: " + i);
@@ -103,7 +103,8 @@ public class BoardManager {
 	public void updateMoves() {
 		validMoves.clear();
 		for (String locationString : locations.keySet()) {
-			String kind = locations.get(locationString).getKind();
+			Piece piece = locations.get(locationString);
+			String kind = piece.getKind();
 			int[] loc = Arrays.stream(locationString.split(" ")).mapToInt(Integer::parseInt).toArray();
 			// ArrayList<int[]> moveDirections = new ArrayList<>();
 			// up, down, right, left
@@ -138,8 +139,9 @@ public class BoardManager {
 				break;
 			}
 			case "rook": {
-				moveSides(moveDirections);
-				break;
+				Rook piece2 =  (Rook) piece;
+				piece2.moves(locationString);
+				continue;
 			}
 			case "pawn": {
 				int x = loc[0] + 0;
@@ -207,6 +209,7 @@ public class BoardManager {
 			}
 		}
 		gameRound++;
+		ui.whosTurn(gameRound % 2);
 	}
 //	public int getGameRound() {
 //		return gameRound;

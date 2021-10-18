@@ -34,8 +34,14 @@ import javafx.stage.Stage;
 public class Ui extends Application {
 	
 	private static Button draggingButton;
-	static Button[][] buttons = new Button[8][8];
+	private static Button[][] buttons = new Button[8][8];
 	private BoardManager boardManager = new BoardManager(this);
+	private Label infoLabel;
+	
+	public Ui() {
+		
+	}
+	
 	public void go(String[] args) {
 		System.out.println("hello");
 		launch();
@@ -51,7 +57,7 @@ public class Ui extends Application {
 //			VBox vbox = new VBox();
 //			vbox.getChildren().add( grid);
 //			root.getChildren().add(vbox);
-			Label infoLabel = new Label("Hello, White starts.");
+			this.infoLabel = new Label("Hello, White starts.");
 			infoLabel.setMinSize(20, 70);
 			infoLabel.setTranslateY(-23);
 			infoLabel.setFont(new Font(20));
@@ -174,10 +180,14 @@ public class Ui extends Application {
 		}
 	}
 	
+	public void whosTurn(int gameRound) {
+		infoLabel.setText("It is " + (gameRound == 0 ? "white's" : "black's") + " turn.");
+	}
+	
 	public void changeToQueen(String locationString) {
 		
 		int[] location = Arrays.stream(locationString.split(" ")).mapToInt(Integer::parseInt).toArray();
-		Piece queen = new Queen(boardManager.getPiece(locationString).getTeam(), "queen", location[0], location[1]);
+		Piece queen = new Queen(boardManager.getPiece(locationString).getTeam(), "queen", boardManager);
 		boardManager.setQueenLocation(locationString, queen);
 		buttons[location[0]][location[1]].setGraphic(new ImageView(new Image(boardManager.getPiece(draggingButton.getText()).getImagePath())));
     	//buttons[location[0]][location[1]].setContentDisplay(ContentDisplay.CENTER);
@@ -188,14 +198,14 @@ public class Ui extends Application {
 		if (boardManager.isPieceAtLocation(button.getText())) {
 			for (String locationStringValidMove : boardManager.getValidMoves(button.getText())) {
 				int[] loc = Arrays.stream(locationStringValidMove.split(" ")).mapToInt(Integer::parseInt).toArray();
-				buttons[loc[0]][loc[1]].setStyle("-fx-background-color: "  + (boardManager.isFriendly(button.getText(), locationStringValidMove) ? "green" : "red"));
+				buttons[loc[0]][loc[1]].setStyle("-fx-background-color: "  + (boardManager.isFriendly(button.getText(), locationStringValidMove) ? "green" : "red") + "; -fx-text-fill: transparent");
 			}
 		}
 	}
 	private void resetColours() {
 		for (int i = 0, c = 1; i < buttons.length; i++) {
 			for (int j = 0; j < buttons[i].length; j++) {
-				buttons[i][j].setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white"));
+				buttons[i][j].setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white") + "; -fx-text-fill: transparent");
 				c++;
 			}
 			c++;
