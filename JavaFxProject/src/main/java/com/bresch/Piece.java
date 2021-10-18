@@ -1,7 +1,8 @@
 package com.bresch;
+import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Piece {
+public abstract class Piece {
 	
 	private int team;
 	private String kind;
@@ -66,6 +67,38 @@ public class Piece {
 	
 	//TODO should know all the moves i can do etc.
 	
+	public void moveSides(ArrayList<int[]> moveDirections) {
+		moveDirections.addAll(
+				Arrays.asList(new int[] { 0, 1 }, new int[] { 0, -1 }, new int[] { 1, 0 }, new int[] { -1, 0 }));
+	}
+
+	public void moveDiagonally(ArrayList<int[]> moveDirections) {
+		moveDirections.addAll(
+				Arrays.asList(new int[] { 1, 1 }, new int[] { 1, -1 }, new int[] { -1, -1 }, new int[] { -1, 1 }));
+	}
+	
+	private void moveRecursion(String locationString, int x, int y, int[] moveDirection, int maxRange) {
+		x += moveDirection[0];
+		y += moveDirection[1];
+		if (maxRange == 0 || x < 0 || x > 7 || y < 0 || y > 7)
+			return;
+
+		String moveString = x + " " + y;
+
+		if (locations.containsKey(moveString)) {
+			if (this.isFriendly(locationString, moveString))
+				return;
+			maxRange = 1;
+		}
+
+		if (validMoves.containsKey(locationString)) {
+			validMoves.get(locationString).add(moveString);
+		} else {
+			validMoves.put(locationString, new ArrayList<>(Arrays.asList(moveString)));
+		}
+
+		moveRecursion(locationString, x, y, moveDirection, maxRange - 1);
+	}
 	
 	
 	

@@ -96,7 +96,7 @@ public class Ui extends Application {
 				String locationString = String.valueOf(i) + " " + String.valueOf(j);
 				Button button = buttons[i][j] = new Button(locationString);	
 				//TODO uncomment Transparency for location text
-				button.setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white"));//+ "; -fx-text-fill: transparent");
+				button.setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white") + "; -fx-text-fill: transparent");
 				//TODO Make resizable pls...
 				button.setMinSize(50, 50);
 //			    buttons[i][j].setPrefSize(scene.getWidth()/8, scene.getHeight()/8);
@@ -177,7 +177,7 @@ public class Ui extends Application {
 	public void changeToQueen(String locationString) {
 		
 		int[] location = Arrays.stream(locationString.split(" ")).mapToInt(Integer::parseInt).toArray();
-		Piece queen = new Piece(boardManager.getPiece(locationString).getTeam(), "queen", location[0], location[1]);
+		Piece queen = new Queen(boardManager.getPiece(locationString).getTeam(), "queen", location[0], location[1]);
 		boardManager.setQueenLocation(locationString, queen);
 		buttons[location[0]][location[1]].setGraphic(new ImageView(new Image(boardManager.getPiece(draggingButton.getText()).getImagePath())));
     	//buttons[location[0]][location[1]].setContentDisplay(ContentDisplay.CENTER);

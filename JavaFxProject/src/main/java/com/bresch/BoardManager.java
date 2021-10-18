@@ -30,24 +30,44 @@ public class BoardManager {
 	public void newGameSpawn() {
 		locations.clear();
 		gameRound = 0;
+		
 		for (int i = 0; i < 8; i++) {
-			locations.put(i + " " + 1, new Piece(0, "pawn", i, 1));
-			locations.put(i + " " + 6, new Piece(1, "pawn", i, 6));
+			locations.put(i + " " + 1, new Pawn(0, "pawn", i, 1));
+			locations.put(i + " " + 6, new Pawn(1, "pawn", i, 6));
+			Piece piece1 = null;
+			Piece piece2 = null;
 			String kind;
 			switch (i) {
 			case 0:
-			case 7:	kind = "rook";  break;
+			case 7:	kind = "rook";
+				piece1 = new Rook(0, kind, i, 0);
+				piece2 = new Rook(1, kind, i, 7);
+				break;
 			case 1:
-			case 6:	kind = "knight";break;
+			case 6:	kind = "knight";
+				piece1 = new Knight(0, kind, i, 0);
+				piece2 = new Knight(1, kind, i, 7);
+				break;
 			case 2:
-			case 5:	kind = "bishop";break;
-			case 3:	kind = "queen";	break;
-			case 4:	kind = "king";	break;
+			case 5:	kind = "bishop";
+				piece1 = new Bishop(0, kind, i, 0);
+				piece2 = new Bishop(1, kind, i, 7);
+				break;
+			case 3:	kind = "queen";	
+				piece1 = new Queen(0, kind, i, 0);
+				piece2 = new Queen(1, kind, i, 7);
+				break;
+			case 4:	kind = "king";
+				piece1 = new King(0, kind, i, 0);
+				piece2 = new King(1, kind, i, 7);
+				break;
 			default:
 				throw new IllegalArgumentException("Unexpected value: " + i);
 			}
-			locations.put(i + " " + 0, new Piece(0, kind, i, 0));
-			locations.put(i + " " + 7, new Piece(1, kind, i, 7));
+			if (piece1 != null && piece2 != null) {
+			locations.put(i + " " + 0, piece1);
+			locations.put(i + " " + 7, piece2);
+			}
 		}
 	}
 
@@ -122,10 +142,9 @@ public class BoardManager {
 				break;
 			}
 			case "pawn": {
-				int team = locations.get(locationString).getTeam();
 				int x = loc[0] + 0;
 				if (locations.get(locationString).getFirstMove()) {
-					//TODO make for first move move two etc. Ressaint dont know how to..but yea...
+					//TODO make for first move move two etc. En Passant dont know how to..but yea...
 				}
 				int y = loc[1] + (locations.get(locationString).getTeam() == 1 ? -1 : 1);
 				if (x < 0 || x > 7 || y < 0 || y > 7)
