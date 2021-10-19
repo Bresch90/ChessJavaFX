@@ -1,10 +1,28 @@
 package com.bresch;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class Knight extends Piece {
 
+	private ArrayList<int[]> moveDirections;
+	private int maxRange;
+	
 	public Knight(int team, String kind, BoardManager boardManager) {
 		super(team, kind, boardManager);
-		// TODO Auto-generated constructor stub
+		this.moveDirections = new ArrayList<>();
+		moveKnight(moveDirections);
+		this.maxRange = 1;
 	}
-
+	
+	@Override
+	public ArrayList<String> moves(String locationString) {
+		return super.movesPiece(locationString, moveDirections, maxRange);
+	}
+	
+	private void moveKnight(ArrayList<int[]> moveDirections) {
+		moveDirections.addAll(
+				Arrays.asList(new int[] { 1, -2 }, new int[] { 1, 2 }, new int[] { 2, 1 }, new int[] { -2, 1 }, 
+							new int[] { -1, -2 }, new int[] { -1, 2 }, new int[] { 2, -1 }, new int[] { -2, -1 }));
+	}
 }

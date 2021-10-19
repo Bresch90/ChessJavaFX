@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-	
 public class Rook extends Piece {
-	ArrayList<int[]> moveDirections;
-	int maxRange;
+	
+	private ArrayList<int[]> moveDirections;
+	private int maxRange;
 	
 	public Rook(int team, String kind, BoardManager boardManager) {
 		super(team, kind, boardManager);

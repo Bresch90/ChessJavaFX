@@ -118,24 +118,20 @@ public class BoardManager {
 
 			switch (kind) {
 			case "king": {
-				moveSides(moveDirections);
-				moveDiagonally(moveDirections);
-				maxRange = 1;
-				break;
+				validMoves.put(locationString, piece.moves(locationString));
+				continue;
 			}
 			case "queen": {
-				moveSides(moveDirections);
-				moveDiagonally(moveDirections);
-				break;
+				validMoves.put(locationString, piece.moves(locationString));
+				continue;
 			}
 			case "bishop": {
-				moveDiagonally(moveDirections);
-				break;
+				validMoves.put(locationString, piece.moves(locationString));
+				continue;
 			}
 			case "knight": {
-				maxRange = 1;
-				moveKnight(moveDirections);
-				break;
+				validMoves.put(locationString, piece.moves(locationString));
+				continue;
 			}
 			case "rook": {
 				//TODO Finished? Possible without casting this way?
