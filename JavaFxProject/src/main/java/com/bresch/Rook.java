@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+	
 public class Rook extends Piece {
 	ArrayList<int[]> moveDirections;
 	int maxRange;
@@ -15,13 +16,9 @@ public class Rook extends Piece {
 		this.maxRange = 7;
 	}
 	
+	@Override
 	public ArrayList<String> moves(String locationString) {
-		int[] loc = Arrays.stream(locationString.split(" ")).mapToInt(Integer::parseInt).toArray();
-		ArrayList<String> validMoves = new ArrayList<>();
-		for (int[] moveDirection : moveDirections) {
-			super.moveRecursion(locationString, loc[0], loc[1], moveDirection, maxRange, validMoves);
-		}
-		return validMoves;
+		return super.movesPiece(locationString, moveDirections, maxRange);
 	}
 
 }

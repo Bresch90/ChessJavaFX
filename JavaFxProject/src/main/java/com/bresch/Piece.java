@@ -57,6 +57,15 @@ public abstract class Piece {
 	
 	//TODO should know all the moves i can do etc.
 	
+	public ArrayList<String> movesPiece(String locationString, ArrayList<int[]> moveDirections, int maxRange) {
+		int[] loc = boardManager.locationStringToArray(locationString);
+		ArrayList<String> validMoves = new ArrayList<>();
+		for (int[] moveDirection : moveDirections) {
+			moveRecursion(locationString, loc[0], loc[1], moveDirection, maxRange, validMoves);
+		}
+		return validMoves;
+	}
+	
 	public void moveSides(ArrayList<int[]> moveDirections) {
 		moveDirections.addAll(
 				Arrays.asList(new int[] { 0, 1 }, new int[] { 0, -1 }, new int[] { 1, 0 }, new int[] { -1, 0 }));
@@ -67,7 +76,7 @@ public abstract class Piece {
 				Arrays.asList(new int[] { 1, 1 }, new int[] { 1, -1 }, new int[] { -1, -1 }, new int[] { -1, 1 }));
 	}
 	
-	public void moveRecursion(String locationString, int x, int y, int[] moveDirection, int maxRange, ArrayList<String> validMoves) {
+	private void moveRecursion(String locationString, int x, int y, int[] moveDirection, int maxRange, ArrayList<String> validMoves) {
 		x += moveDirection[0];
 		y += moveDirection[1];
 		if (maxRange == 0 || x < 0 || x > 7 || y < 0 || y > 7)
@@ -82,6 +91,11 @@ public abstract class Piece {
 		}
 		validMoves.add(moveString);
 		moveRecursion(locationString, x, y, moveDirection, maxRange - 1, validMoves);
+	}
+
+	public ArrayList<String> moves(String locationString) {
+		System.out.println("is this needed? moves(locationString) called in Piece");
+		return null;
 	}
 	
 	

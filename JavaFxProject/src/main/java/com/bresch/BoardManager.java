@@ -139,7 +139,7 @@ public class BoardManager {
 			}
 			case "rook": {
 				//TODO Finished? Possible without casting this way?
-				validMoves.put(locationString, ((Rook) piece).moves(locationString));
+				validMoves.put(locationString, piece.moves(locationString));
 				continue;
 			}
 			case "pawn": {
@@ -255,5 +255,9 @@ public class BoardManager {
 	private void moveDiagonally(ArrayList<int[]> moveDirections) {
 		moveDirections.addAll(
 				Arrays.asList(new int[] { 1, 1 }, new int[] { 1, -1 }, new int[] { -1, -1 }, new int[] { -1, 1 }));
+	}
+
+	public int[] locationStringToArray(String locationString) {
+		return Arrays.stream(locationString.split(" ")).mapToInt(Integer::parseInt).toArray();
 	}
 }
