@@ -15,9 +15,9 @@ public class Rook extends Piece {
 		this.maxRange = 7;
 	}
 	
-	public HashMap<String, ArrayList<String>> moves(String locationString) {
+	public ArrayList<String> moves(String locationString) {
 		int[] loc = Arrays.stream(locationString.split(" ")).mapToInt(Integer::parseInt).toArray();
-		HashMap<String, ArrayList<String>> validMoves = new HashMap<>();
+		ArrayList<String> validMoves = new ArrayList<>();
 		for (int[] moveDirection : moveDirections) {
 			super.moveRecursion(locationString, loc[0], loc[1], moveDirection, maxRange, validMoves);
 		}

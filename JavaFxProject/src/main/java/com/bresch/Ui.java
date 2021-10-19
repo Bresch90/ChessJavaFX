@@ -34,12 +34,13 @@ import javafx.stage.Stage;
 public class Ui extends Application {
 	
 	private static Button draggingButton;
-	private static Button[][] buttons = new Button[8][8];
-	private BoardManager boardManager = new BoardManager(this);
+	private static Button[][] buttons ;
+	private BoardManager boardManager;
 	private Label infoLabel;
 	
 	public Ui() {
-		
+		buttons = new Button[8][8];
+		boardManager  = new BoardManager(this);
 	}
 	
 	public void go(String[] args) {
@@ -57,7 +58,7 @@ public class Ui extends Application {
 //			VBox vbox = new VBox();
 //			vbox.getChildren().add( grid);
 //			root.getChildren().add(vbox);
-			this.infoLabel = new Label("Hello, White starts.");
+			infoLabel = new Label("Hello, White starts.");
 			infoLabel.setMinSize(20, 70);
 			infoLabel.setTranslateY(-23);
 			infoLabel.setFont(new Font(20));
@@ -65,7 +66,7 @@ public class Ui extends Application {
 //			BorderStroke?
 //			vbox.getChildren().add(infoLabel); // why doesnt work? vbox no good?
 //			VBox should have worked? but maybe can fix? Maybe put in borderpane?
-			Scene scene = new Scene(root, 400, 425);
+			Scene scene = new Scene(root, 480, 505);
 			
 			this.setNewGame(grid);
 			root.setBottom(infoLabel);//, 0, 8);
@@ -84,7 +85,7 @@ public class Ui extends Application {
 //			    rc.setFillHeight(true);
 //			    grid.getRowConstraints().add(rc);
 //			}
-			
+			stage.setResizable(false);
 			stage.setScene(scene);
 			stage.show();
 			
@@ -101,19 +102,19 @@ public class Ui extends Application {
 			for (int j = 0; j < buttons[i].length; j++) {
 				String locationString = String.valueOf(i) + " " + String.valueOf(j);
 				Button button = buttons[i][j] = new Button(locationString);	
+				button.setContentDisplay(ContentDisplay.CENTER);
 				//TODO uncomment Transparency for location text
 				button.setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white") + "; -fx-text-fill: transparent");
 				//TODO Make resizable pls...
-				button.setMinSize(50, 50);
+				button.setMinSize(60, 60);
 //			    buttons[i][j].setPrefSize(scene.getWidth()/8, scene.getHeight()/8);
-				button.setMaxSize(50, 50);
+				button.setMaxSize(60, 60);
 				if (boardManager.isPieceAtLocation(locationString)) {
 					ImageView imageView = new ImageView(new Image(boardManager.getPiece(locationString).getImagePath()));
 //					imageView.fitHeightProperty().bind(buttons[i][j].heightProperty());;
 //					imageView.fitWidthProperty().bind(buttons[i][j].widthProperty());
 					
 					button.setGraphic(imageView);
-					button.setContentDisplay(ContentDisplay.CENTER);
 				}
 				grid.add(button, i, 7-j);
 				c++;
@@ -160,7 +161,7 @@ public class Ui extends Application {
 					//check if target spot is empty or does NOT contain a friendly piece
 		            if (!boardManager.isPieceAtLocation(button.getText()) || !boardManager.isFriendly(button.getText(), draggingButton.getText())) {
 		            	button.setGraphic(new ImageView(new Image(boardManager.getPiece(draggingButton.getText()).getImagePath())));
-		            	button.setContentDisplay(ContentDisplay.CENTER);
+		            	
 		            	
 		            	boardManager.movePiece(button.getText(), draggingButton.getText());
 		            	
@@ -189,7 +190,7 @@ public class Ui extends Application {
 		int[] location = Arrays.stream(locationString.split(" ")).mapToInt(Integer::parseInt).toArray();
 		Piece queen = new Queen(boardManager.getPiece(locationString).getTeam(), "queen", boardManager);
 		boardManager.setQueenLocation(locationString, queen);
-		buttons[location[0]][location[1]].setGraphic(new ImageView(new Image(boardManager.getPiece(draggingButton.getText()).getImagePath())));
+		buttons[location[0]][location[1]].setGraphic(new ImageView(new Image(queen.getImagePath())));
     	//buttons[location[0]][location[1]].setContentDisplay(ContentDisplay.CENTER);
 	}
 	

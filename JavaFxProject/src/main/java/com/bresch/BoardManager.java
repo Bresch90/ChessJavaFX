@@ -1,5 +1,6 @@
 package com.bresch;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -117,7 +118,6 @@ public class BoardManager {
 
 			switch (kind) {
 			case "king": {
-				// TODO what moves can i make.
 				moveSides(moveDirections);
 				moveDiagonally(moveDirections);
 				maxRange = 1;
@@ -133,14 +133,13 @@ public class BoardManager {
 				break;
 			}
 			case "knight": {
-				// TODO implement me 0 moves? 1?
 				maxRange = 1;
 				moveKnight(moveDirections);
 				break;
 			}
 			case "rook": {
-				Rook piece2 =  (Rook) piece;
-				piece2.moves(locationString);
+				//TODO Finished? Possible without casting this way?
+				validMoves.put(locationString, ((Rook) piece).moves(locationString));
 				continue;
 			}
 			case "pawn": {

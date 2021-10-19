@@ -67,7 +67,7 @@ public abstract class Piece {
 				Arrays.asList(new int[] { 1, 1 }, new int[] { 1, -1 }, new int[] { -1, -1 }, new int[] { -1, 1 }));
 	}
 	
-	public void moveRecursion(String locationString, int x, int y, int[] moveDirection, int maxRange, HashMap<String, ArrayList<String>> validMoves) {
+	public void moveRecursion(String locationString, int x, int y, int[] moveDirection, int maxRange, ArrayList<String> validMoves) {
 		x += moveDirection[0];
 		y += moveDirection[1];
 		if (maxRange == 0 || x < 0 || x > 7 || y < 0 || y > 7)
@@ -80,13 +80,7 @@ public abstract class Piece {
 				return;
 			maxRange = 1;
 		}
-
-		if (validMoves.containsKey(locationString)) {
-			validMoves.get(locationString).add(moveString);
-		} else {
-			validMoves.put(locationString, new ArrayList<>(Arrays.asList(moveString)));
-		}
-
+		validMoves.add(moveString);
 		moveRecursion(locationString, x, y, moveDirection, maxRange - 1, validMoves);
 	}
 	
