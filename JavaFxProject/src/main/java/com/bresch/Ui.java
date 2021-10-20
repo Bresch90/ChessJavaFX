@@ -33,14 +33,16 @@ import javafx.stage.Stage;
 
 public class Ui extends Application {
 	
-	private static Button draggingButton;
-	private static Button[][] buttons ;
+	private Button draggingButton;
+	private Button[][] buttons ;
 	private BoardManager boardManager;
 	private Label infoLabel;
+	private boolean check;
 	
 	public Ui() {
-		buttons = new Button[8][8];
-		boardManager  = new BoardManager(this);
+		this.buttons = new Button[8][8];
+		this.boardManager  = new BoardManager(this);
+		this.check = false;
 	}
 	
 	public void go(String[] args) {
@@ -169,8 +171,8 @@ public class Ui extends Application {
 		                e.setDropCompleted(true);
 		                
 			            draggingButton = null;
-			            boardManager.nextRound();
 			            boardManager.updateMoves();
+			            boardManager.nextRound();
 			            resetColours();
 		            }
 
@@ -181,17 +183,20 @@ public class Ui extends Application {
 		}
 	}
 	
-	public void whosTurn(int gameRound) {
-		infoLabel.setText("It is " + (gameRound == 0 ? "white's" : "black's") + " turn.");
+	public void setCheck(boolean bool) {
+		check = bool; 
+	}
+	public boolean getCheck() {
+		return check;
 	}
 	
-	public void changeToQueen(String locationString) {
-		
-		int[] location = Arrays.stream(locationString.split(" ")).mapToInt(Integer::parseInt).toArray();
-		Piece queen = new Queen(boardManager.getPiece(locationString).getTeam(), "queen", boardManager);
-		boardManager.setQueenLocation(locationString, queen);
-		buttons[location[0]][location[1]].setGraphic(new ImageView(new Image(queen.getImagePath())));
-    	//buttons[location[0]][location[1]].setContentDisplay(ContentDisplay.CENTER);
+	public void whosTurn(int gameRound) {
+		String checked = (check ? "Checked! " : "");
+		infoLabel.setText(checked + "It is " + (gameRound == 0 ? "white's" : "black's") + " turn.");
+	}
+	
+	public void changeToQueen(int[] location, String imagePath) {
+		buttons[location[0]][location[1]].setGraphic(new ImageView(new Image(imagePath)));
 	}
 	
 	private void setMoveColours(Button button) {

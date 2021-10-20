@@ -17,6 +17,10 @@ public class BoardManager {
 	HashMap<String, Piece> locations;
 	HashMap<String, ArrayList<String>> validMoves;
 	Ui ui;
+	String whiteKingLocation;
+	String blackKingLocation;
+	HashMap<String, Piece> whiteLocations;
+	HashMap<String, Piece> blackLocations;
 	
 	int gameRound;
 	
@@ -86,9 +90,13 @@ public class BoardManager {
 		return locations.get(locationString);
 	}
 	
-	public void setQueenLocation(String locationString, Piece queen) {
+	public void pawnToQueen(String locationString) {
+		int[] location = BoardManager.locationStringToArray(locationString);
+		Piece queen = new Queen(locations.get(locationString).getTeam(), "queen", this);
 		locations.put(locationString, queen);
+		ui.changeToQueen(location, queen.getImagePath());
 	}
+	
 	public void movePiece(String locationString1, String locationString2) {
 		Piece movingPiece = locations.get(locationString2);
 		locations.put(locationString1, movingPiece);
@@ -103,10 +111,32 @@ public class BoardManager {
 	}
 
 	public void updateMoves() {
+		//TODO How the F can I stop moves until solved Check????? Backup moves? Try all moved for friendly, only allow moves that solve check?
+		HashMap<String, ArrayList<String>> backupValidMoves = new HashMap<>();
+		backupValidMoves.putAll(validMoves);
 		validMoves.clear();
+		boolean seenCheck = false;
 		for (String locationString : locations.keySet()) {
 			Piece piece = locations.get(locationString);
-			validMoves.put(locationString, piece.moves(locationString));
+			if (piece.getKind().equals("king")) {
+				if (piece.getTeam() == 0) {
+					whiteKingLocation = locationString;
+				} else {
+					blackKingLocation = locationString;
+				}
+			}
+			ArrayList<String> moves = piece.moves(locationString);
+			for (String moveString : moves) {
+				if (!isFriendly(whiteKingLocation, locationString) && (moveString.equals(whiteKingLocation))
+						||(!isFriendly(blackKingLocation, locationString) && moveString.equals(blackKingLocation))) {
+					ui.setCheck(true);
+					seenCheck = true;
+				}
+			}
+			validMoves.put(locationString, moves);
+		}
+		if (!seenCheck) {
+			ui.setCheck(false);
 		}
 	}
 	
@@ -116,13 +146,9 @@ public class BoardManager {
 			if (piece.getKind().equals("pawn")) {
 				int team = piece.getTeam();
 				int y = Integer.parseInt(locationString.split(" ")[1]);
-				if (team == 1 && y == 0) {
-					ui.changeToQueen(locationString);
-					System.out.println("He should be black queeen!!!!");
-				} else if (team == 0 && y == 7) {
-					ui.changeToQueen(locationString);
-					System.out.println("He should be white queeen!!!!");
-				}
+				if ((team == 1 && y == 0) || (team == 0 && y == 7)) {
+					pawnToQueen(locationString);
+				} 
 			}
 		}
 		gameRound++;
