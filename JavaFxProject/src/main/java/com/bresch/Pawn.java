@@ -20,7 +20,8 @@ public class Pawn extends Piece {
 	
 	@Override
 	public void setFirstMove() {
-		
+		movesMade++;
+		super.setFirstMove();
 	}
 	
 	@Override
