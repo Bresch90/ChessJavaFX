@@ -139,52 +139,55 @@ public class BoardManager {
 				continue;
 			}
 			case "pawn": {
-				int x = loc[0] + 0;
-				if (locations.get(locationString).getFirstMove()) {
-					//TODO make for first move move two etc. En Passant dont know how to..but yea...
-				}
-				int y = loc[1] + (locations.get(locationString).getTeam() == 1 ? -1 : 1);
-				if (x < 0 || x > 7 || y < 0 || y > 7)
-					break; //is this a problem??
-				String moveString = x + " " + y;
-				if (!locations.containsKey(moveString)) {
-					if (validMoves.containsKey(locationString)) {
-						validMoves.get(locationString).add(moveString);
-					} else {
-						validMoves.put(locationString, new ArrayList<>(Arrays.asList(moveString)));
-					}
-				}
-
-				// TODO refactor this?
-				//Pawns can only move forward, white up, black down.
-				ArrayList<int[]> pawnAttack = new ArrayList<int[]>(
-						Arrays.asList(new int[] { 1, (locations.get(locationString).getTeam() == 0 ? 1 : -1) },
-								new int[] { -1, (locations.get(locationString).getTeam() == 0 ? 1 : -1) }));
-				for (int[] attack : pawnAttack) {
-					x = loc[0] + attack[0];
-					y = loc[1] + attack[1];
-					if (x < 0 || x > 7 || y < 0 || y > 7)
-						continue;
-					moveString = x + " " + y;
-					if (locations.containsKey(moveString)) {
-						if (this.isFriendly(locationString, moveString))
-							continue;
-						if (validMoves.containsKey(locationString)) {
-							validMoves.get(locationString).add(moveString);
-						} else {
-							validMoves.put(locationString, new ArrayList<>(Arrays.asList(moveString)));
-						}
-					}
-				}
-				break;
+				validMoves.put(locationString, piece.moves(locationString));
+				continue;
+//				//this! fix. away.
+//				int x = loc[0] + 0;
+//				if (locations.get(locationString).getFirstMove()) {
+//					//TODO make for first move move two etc. En Passant dont know how to..but yea...
+//				}
+//				int y = loc[1] + (locations.get(locationString).getTeam() == 1 ? -1 : 1);
+//				if (x < 0 || x > 7 || y < 0 || y > 7)
+//					break; //is this a problem??
+//				String moveString = x + " " + y;
+//				if (!locations.containsKey(moveString)) {
+//					if (validMoves.containsKey(locationString)) {
+//						validMoves.get(locationString).add(moveString);
+//					} else {
+//						validMoves.put(locationString, new ArrayList<>(Arrays.asList(moveString)));
+//					}
+//				}
+//
+//				// TODO refactor this?
+//				//Pawns can only move forward, white up, black down.
+//				ArrayList<int[]> pawnAttack = new ArrayList<int[]>(
+//						Arrays.asList(new int[] { 1, (locations.get(locationString).getTeam() == 0 ? 1 : -1) },
+//								new int[] { -1, (locations.get(locationString).getTeam() == 0 ? 1 : -1) }));
+//				for (int[] attack : pawnAttack) {
+//					x = loc[0] + attack[0];
+//					y = loc[1] + attack[1];
+//					if (x < 0 || x > 7 || y < 0 || y > 7)
+//						continue;
+//					moveString = x + " " + y;
+//					if (locations.containsKey(moveString)) {
+//						if (this.isFriendly(locationString, moveString))
+//							continue;
+//						if (validMoves.containsKey(locationString)) {
+//							validMoves.get(locationString).add(moveString);
+//						} else {
+//							validMoves.put(locationString, new ArrayList<>(Arrays.asList(moveString)));
+//						}
+//					}
+//				}
+//				break;
 			}
 			default:
 				throw new IllegalArgumentException("Unexpected value: " + kind);
 			}
 
-			for (int[] moveDirection : moveDirections) {
-				moveRecursion(locationString, loc[0], loc[1], moveDirection, maxRange);
-			}
+//			for (int[] moveDirection : moveDirections) {
+//				moveRecursion(locationString, loc[0], loc[1], moveDirection, maxRange);
+//			}
 		}
 	}
 	
@@ -253,7 +256,7 @@ public class BoardManager {
 				Arrays.asList(new int[] { 1, 1 }, new int[] { 1, -1 }, new int[] { -1, -1 }, new int[] { -1, 1 }));
 	}
 
-	public int[] locationStringToArray(String locationString) {
+	public static int[] locationStringToArray(String locationString) {
 		return Arrays.stream(locationString.split(" ")).mapToInt(Integer::parseInt).toArray();
 	}
 }
