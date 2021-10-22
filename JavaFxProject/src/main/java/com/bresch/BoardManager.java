@@ -16,12 +16,11 @@ import java.util.Iterator;
 public class BoardManager {
 	HashMap<String, Piece> locations;
 	HashMap<String, ArrayList<String>> validMoves;
-	Ui ui;
 	String whiteKingLocation;
 	String blackKingLocation;
 	HashMap<String, Piece> whiteLocations;
 	HashMap<String, Piece> blackLocations;
-	
+	Ui ui;
 	int gameRound;
 	
 	

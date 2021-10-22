@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -13,7 +14,9 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -38,18 +41,24 @@ public class Ui extends Application {
 	private BoardManager boardManager;
 	private Label infoLabel;
 	private boolean check;
+	private Logic logic;
 	
 	public Ui() {
 		this.buttons = new Button[8][8];
-		this.boardManager  = new BoardManager(this);
 		this.check = false;
+		this.boardManager = new BoardManager(this);
+		this.logic = new Logic(this, boardManager);
 	}
 	
-	public void go(String[] args) {
+	public static void go(String[] args) {
 		System.out.println("hello");
 		launch();
 	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////// Start of Setup ///////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	@Override
 	public void start(Stage stage) {
 		try {
@@ -96,8 +105,11 @@ public class Ui extends Application {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+		
+		System.out.println("end of start");
+		
 	}
-
+	
 	private void setNewGame(GridPane grid) {
 		boardManager.newGameSpawn();
 		for (int i = 0, c = 1; i < buttons.length; i++) {
@@ -129,59 +141,80 @@ public class Ui extends Application {
 	private void setButtonEvents() {
 		for (int i = 0; i < buttons.length; i++) {
 			for (int j = 0; j < buttons[i].length; j++) {
-				//Set piece selection
-				buttons[i][j].setOnAction(e -> {
-					Button button = (Button)e.getSource();
-					setMoveColours(button);
-				});
+				//Set button selection to see where the piece can move
+				buttons[i][j].setOnAction(e-> this.onButtonPress(e));
 				
-				// Set Drag Detected, 
-				buttons[i][j].setOnDragDetected(e -> {
-					Button button = (Button)e.getSource();
-					if (!boardManager.isPieceAtLocation(button.getText())) return;
-		            Dragboard db = button.startDragAndDrop(TransferMode.MOVE);
-		            db.setDragView(button.snapshot(null, null));
-		            ClipboardContent cc = new ClipboardContent();
-		            cc.putString("");
-		            db.setContent(cc);
-		            draggingButton = button;
-		            setMoveColours(button);
-				});
+				// Set Drag Detected 
+				buttons[i][j].setOnDragDetected(e -> this.onDragDetected(e));
 				
 				// Set Drag Over, accept drag
-				buttons[i][j].setOnDragOver(e -> {
-					Button button = (Button)e.getSource();
-					String draggingLocation = draggingButton.getText();
-		            if (draggingButton != null && boardManager.getValidMoves(draggingLocation).contains(button.getText()) && boardManager.isMyTurn(draggingLocation)) {
-		                e.acceptTransferModes(TransferMode.MOVE);
-		            }
-		        });
+				buttons[i][j].setOnDragOver(e -> this.onDragOver(e));
 				
 				// Set Drag Dropped, 
-				buttons[i][j].setOnDragDropped(e -> {
-					Button button = (Button)e.getSource();
-					//check if target spot is empty or does NOT contain a friendly piece
-		            if (!boardManager.isPieceAtLocation(button.getText()) || !boardManager.isFriendly(button.getText(), draggingButton.getText())) {
-		            	button.setGraphic(new ImageView(new Image(boardManager.getPiece(draggingButton.getText()).getImagePath())));
-		            	
-		            	
-		            	boardManager.movePiece(button.getText(), draggingButton.getText());
-		            	
-		            	draggingButton.setGraphic(null);
-		                e.setDropCompleted(true);
-		                
-			            draggingButton = null;
-			            boardManager.updateMoves();
-			            boardManager.nextRound();
-			            resetColours();
-		            }
-
-		            
-		        });
+				buttons[i][j].setOnDragDropped(e -> this.onDragDropped(e));
 		              
 			}
 		}
 	}
+	
+	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////// End of Setup /////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////// Button events ///////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	private void onButtonPress(ActionEvent e) {
+		Button button = (Button)e.getSource();
+		setMoveColours(button);
+	}
+	
+	private void onDragDetected(MouseEvent e) {
+		Button button = (Button)e.getSource();
+		if (!boardManager.isPieceAtLocation(button.getText())) return;
+        Dragboard db = button.startDragAndDrop(TransferMode.MOVE);
+        db.setDragView(button.snapshot(null, null));
+        ClipboardContent cc = new ClipboardContent();
+        cc.putString("");
+        db.setContent(cc);
+        draggingButton = button;
+        setMoveColours(button);
+	}
+	
+	private void onDragOver(DragEvent e) {
+		Button button = (Button)e.getSource();
+		String draggingLocation = draggingButton.getText();
+        if (draggingButton != null && boardManager.getValidMoves(draggingLocation).contains(button.getText()) && boardManager.isMyTurn(draggingLocation)) {
+            e.acceptTransferModes(TransferMode.MOVE);
+        }
+	}
+	
+	private void onDragDropped(DragEvent e) {
+		Button button = (Button)e.getSource();
+		//check if target spot is empty or does NOT contain a friendly piece
+        if (!boardManager.isPieceAtLocation(button.getText()) || !boardManager.isFriendly(button.getText(), draggingButton.getText())) {
+        	button.setGraphic(new ImageView(new Image(boardManager.getPiece(draggingButton.getText()).getImagePath())));
+        	
+        	
+        	boardManager.movePiece(button.getText(), draggingButton.getText());
+        	
+        	draggingButton.setGraphic(null);
+            e.setDropCompleted(true);
+            
+            draggingButton = null;
+            boardManager.updateMoves();
+            boardManager.nextRound();
+            resetColours();
+        }
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////// Button events end ///////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	
 	public void setCheck(boolean bool) {
 		check = bool; 
