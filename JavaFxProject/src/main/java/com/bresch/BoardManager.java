@@ -103,9 +103,14 @@ public class BoardManager {
 		movingPiece.setFirstMove();
 	}
 
+	public boolean isValidMove(String draggingString, String dragOverString) {
+		if (!validMoves.containsKey(draggingString))
+			return false;
+		return validMoves.get(draggingString).contains(dragOverString);
+	}
+	
 	public ArrayList<String> getValidMoves(String locationString) {
-		if (!validMoves.containsKey(locationString))
-			return new ArrayList<>();
+		if (!validMoves.containsKey(locationString)) return new ArrayList<>();
 		return validMoves.get(locationString);
 	}
 

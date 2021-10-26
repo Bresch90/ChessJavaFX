@@ -1,5 +1,6 @@
 package com.bresch;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,6 +14,7 @@ import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
@@ -142,16 +144,26 @@ public class Ui extends Application {
 		for (int i = 0; i < buttons.length; i++) {
 			for (int j = 0; j < buttons[i].length; j++) {
 				//Set button selection to see where the piece can move
-				buttons[i][j].setOnAction(e-> this.onButtonPress(e));
+				buttons[i][j].setOnAction(e-> logic.onButtonPress((Button)e.getSource()));
 				
 				// Set Drag Detected 
-				buttons[i][j].setOnDragDetected(e -> this.onDragDetected(e));
+				buttons[i][j].setOnDragDetected(e -> logic.onDragDetected((Button)e.getSource()));
 				
 				// Set Drag Over, accept drag
-				buttons[i][j].setOnDragOver(e -> this.onDragOver(e));
-				
+				buttons[i][j].setOnDragOver(e -> {
+					String draggingString = draggingButton.getText();
+					String dragOverString = ((Button) e.getSource()).getText();
+			        if (draggingButton == null) return;
+					if (logic.isDragOverAccept(draggingString, dragOverString)) {
+						e.acceptTransferModes(TransferMode.MOVE);
+					}
+				});
 				// Set Drag Dropped, 
-				buttons[i][j].setOnDragDropped(e -> this.onDragDropped(e));
+				buttons[i][j].setOnDragDropped(e -> {
+					if (logic.onDragDropped(draggingButton, (Button)e.getSource())) {
+						e.setDropCompleted(true);
+					}
+				});
 		              
 			}
 		}
@@ -163,58 +175,21 @@ public class Ui extends Application {
 	///////////////////////////////////////////////////// End of Setup /////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////// Button events ///////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	private void onButtonPress(ActionEvent e) {
-		Button button = (Button)e.getSource();
-		setMoveColours(button);
-	}
-	
-	private void onDragDetected(MouseEvent e) {
-		Button button = (Button)e.getSource();
-		if (!boardManager.isPieceAtLocation(button.getText())) return;
-        Dragboard db = button.startDragAndDrop(TransferMode.MOVE);
-        db.setDragView(button.snapshot(null, null));
-        ClipboardContent cc = new ClipboardContent();
-        cc.putString("");
-        db.setContent(cc);
-        draggingButton = button;
-        setMoveColours(button);
-	}
-	
-	private void onDragOver(DragEvent e) {
-		Button button = (Button)e.getSource();
-		String draggingLocation = draggingButton.getText();
-        if (draggingButton != null && boardManager.getValidMoves(draggingLocation).contains(button.getText()) && boardManager.isMyTurn(draggingLocation)) {
-            e.acceptTransferModes(TransferMode.MOVE);
-        }
-	}
-	
-	private void onDragDropped(DragEvent e) {
-		Button button = (Button)e.getSource();
-		//check if target spot is empty or does NOT contain a friendly piece
-        if (!boardManager.isPieceAtLocation(button.getText()) || !boardManager.isFriendly(button.getText(), draggingButton.getText())) {
-        	button.setGraphic(new ImageView(new Image(boardManager.getPiece(draggingButton.getText()).getImagePath())));
-        	
-        	
-        	boardManager.movePiece(button.getText(), draggingButton.getText());
-        	
-        	draggingButton.setGraphic(null);
-            e.setDropCompleted(true);
-            
-            draggingButton = null;
-            boardManager.updateMoves();
-            boardManager.nextRound();
-            resetColours();
-        }
-	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////// Button events end ///////////////////////////////////////////////////////
+	////////////////////////////////////////////// Private utility's ///////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	
+
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////// Public utility's ////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	public void setDraggingButton(Button draggingButton) {
+		this.draggingButton = draggingButton;
+	}
 	
 	public void setCheck(boolean bool) {
 		check = bool; 
@@ -232,16 +207,15 @@ public class Ui extends Application {
 		buttons[location[0]][location[1]].setGraphic(new ImageView(new Image(imagePath)));
 	}
 	
-	private void setMoveColours(Button button) {
+	public void setMoveColours(String locationString, ArrayList<String> validMoves) {
 		resetColours();
-		if (boardManager.isPieceAtLocation(button.getText())) {
-			for (String locationStringValidMove : boardManager.getValidMoves(button.getText())) {
-				int[] loc = Arrays.stream(locationStringValidMove.split(" ")).mapToInt(Integer::parseInt).toArray();
-				buttons[loc[0]][loc[1]].setStyle("-fx-background-color: "  + (boardManager.isFriendly(button.getText(), locationStringValidMove) ? "green" : "red") + "; -fx-text-fill: transparent");
-			}
+		for (String validMoveString : validMoves) {
+			int[] loc = BoardManager.locationStringToArray(validMoveString);
+			buttons[loc[0]][loc[1]].setStyle("-fx-background-color: "  + (boardManager.isFriendly(locationString, validMoveString) ? "green" : "red") + "; -fx-text-fill: transparent");
 		}
 	}
-	private void resetColours() {
+	
+	public void resetColours() {
 		for (int i = 0, c = 1; i < buttons.length; i++) {
 			for (int j = 0; j < buttons[i].length; j++) {
 				buttons[i][j].setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white") + "; -fx-text-fill: transparent");
