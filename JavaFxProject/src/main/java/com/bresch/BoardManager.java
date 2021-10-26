@@ -96,11 +96,14 @@ public class BoardManager {
 		ui.changeToQueen(location, queen.getImagePath());
 	}
 	
-	public void movePiece(String locationString1, String locationString2) {
-		Piece movingPiece = locations.get(locationString2);
-		locations.put(locationString1, movingPiece);
-		locations.remove(locationString2);
+	public void movePiece(String locationString1, String locationString2, HashMap<String, Piece> locationsLocal) {
+		Piece movingPiece = locationsLocal.get(locationString2);
+		locationsLocal.put(locationString1, movingPiece);
+		locationsLocal.remove(locationString2);
 		movingPiece.setFirstMove();
+	}
+	public void movePiece(String locationString1, String locationString2) {
+		movePiece(locationString1, locationString2, locations);
 	}
 
 	public boolean isValidMove(String draggingString, String dragOverString) {
@@ -114,10 +117,13 @@ public class BoardManager {
 		return validMoves.get(locationString);
 	}
 
+	
+	
+	//TODO new plan. updateMoves should ask possibleMoves(locations). 
+	//Then if (possibleMoves.get(xx).contains(kingLocations) && !isFriendly(xx)) 
+	//Then boardManager should movePiece(string, string, simulatedLocations), ask possibleMoves(simulatedLocations) ask if still checked (make sure same player!)
+	//If NOT checked, validMove.add(thatMove). Else its not valid.
 	public void updateMoves() {
-		//TODO How the F can I stop moves until solved Check????? Backup moves? Try all moved for friendly, only allow moves that solve check?
-		HashMap<String, ArrayList<String>> backupValidMoves = new HashMap<>();
-		backupValidMoves.putAll(validMoves);
 		validMoves.clear();
 		boolean seenCheck = false;
 		for (String locationString : locations.keySet()) {

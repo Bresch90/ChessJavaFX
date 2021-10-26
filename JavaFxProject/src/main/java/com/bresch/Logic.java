@@ -19,6 +19,11 @@ public class Logic {
 		this.boardManager = boardManager;
 	}
 	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////// Button actions //////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	public void onButtonPress(Button button) {
 		String locationString = button.getText();
 		if (!boardManager.isPieceAtLocation(button.getText())) return;
@@ -56,7 +61,12 @@ public class Logic {
         ui.resetColours();
         
         //TODO here should be changed into Logic
+        
+        
+        //TODO also, Ask boardManager.possibleMoves(locations) -> logic for AI.
+        
         boardManager.updateMoves();
+        
         
         boardManager.nextRound();
        
