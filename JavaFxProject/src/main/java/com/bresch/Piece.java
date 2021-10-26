@@ -58,7 +58,7 @@ public abstract class Piece {
 	//TODO should know all the moves i can do etc.
 	
 	public ArrayList<String> movesPiece(String locationString, ArrayList<int[]> moveDirections, int maxRange) {
-		int[] loc = boardManager.locationStringToArray(locationString);
+		int[] loc = BoardManager.locationStringToArray(locationString);
 		ArrayList<String> validMoves = new ArrayList<>();
 		for (int[] moveDirection : moveDirections) {
 			moveRecursion(locationString, loc[0], loc[1], moveDirection, maxRange, validMoves);
@@ -93,12 +93,5 @@ public abstract class Piece {
 		moveRecursion(locationString, x, y, moveDirection, maxRange - 1, validMoves);
 	}
 
-	public ArrayList<String> moves(String locationString) {
-		System.out.println("is this needed? moves(locationString) called in Piece");
-		return null;
-	}
-	
-	
-	
-	
+	public abstract ArrayList<String> moves(String locationString);
 }
