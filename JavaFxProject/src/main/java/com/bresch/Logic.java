@@ -13,10 +13,12 @@ public class Logic {
 
 	private Ui ui;
 	private BoardManager boardManager;
+	private int gameRound;
 	
 	public Logic(Ui ui, BoardManager boardManager) {
 		this.ui = ui;
 		this.boardManager = boardManager;
+		this.gameRound = 0;
 	}
 	
 	
@@ -60,15 +62,13 @@ public class Logic {
         ui.setDraggingButton(null);
         ui.resetColours();
         
-        //TODO here should be changed into Logic
+		boardManager.isThereNewQueen();
+		boardManager.updateValidMoves();
+		boardManager.nextGameRound();
         
         
         //TODO also, Ask boardManager.possibleMoves(locations) -> logic for AI.
         
-        boardManager.updateMoves();
-        
-        
-        boardManager.nextRound();
        
         return true;
 	}
