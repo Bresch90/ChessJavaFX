@@ -176,7 +176,7 @@ public class Ui extends Application {
 		return check;
 	}
 	
-	public void whosTurn(int gameRound) {
+	public void updateInfoLabel(int gameRound) {
 		String checked = (check ? "Checked! " : "");
 		infoLabel.setText(checked + "It is " + (gameRound == 0 ? "white's" : "black's") + " turn.");
 	}

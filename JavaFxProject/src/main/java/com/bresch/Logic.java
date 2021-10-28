@@ -63,6 +63,7 @@ public class Logic {
         ui.resetColours();
         
 		boardManager.isThereNewQueen();
+		ui.setCheck(boardManager.isThereCheck());
 		boardManager.updateValidMoves();
 		boardManager.nextGameRound();
         

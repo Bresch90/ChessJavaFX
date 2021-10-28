@@ -5,13 +5,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-
+import java.util.stream.Collectors;
 
 //TODO undo move?
 //TODO save board?
 //TODO show gameround etc?
 //TODO Ai moves?
-
 
 public class BoardManager {
 	private HashMap<String, Piece> locations;
@@ -22,19 +21,18 @@ public class BoardManager {
 	private HashMap<String, Piece> blackLocations;
 	private Ui ui;
 	private int gameRound;
-	
-	
+
 	public BoardManager(Ui ui) {
 		this.ui = ui;
 		this.locations = new HashMap<>();
 		this.validMoves = new HashMap<>();
 		this.gameRound = 0;
-		}
+	}
 
 	public void newGameSpawn() {
 		locations.clear();
 		gameRound = 0;
-		
+
 		for (int i = 0; i < 8; i++) {
 			locations.put(i + " " + 1, new Pawn(0, "pawn", this));
 			locations.put(i + " " + 6, new Pawn(1, "pawn", this));
@@ -43,25 +41,30 @@ public class BoardManager {
 			String kind;
 			switch (i) {
 			case 0:
-			case 7:	kind = "rook";
+			case 7:
+				kind = "rook";
 				piece1 = new Rook(0, kind, this);
 				piece2 = new Rook(1, kind, this);
 				break;
 			case 1:
-			case 6:	kind = "knight";
+			case 6:
+				kind = "knight";
 				piece1 = new Knight(0, kind, this);
 				piece2 = new Knight(1, kind, this);
 				break;
 			case 2:
-			case 5:	kind = "bishop";
+			case 5:
+				kind = "bishop";
 				piece1 = new Bishop(0, kind, this);
 				piece2 = new Bishop(1, kind, this);
 				break;
-			case 3:	kind = "queen";	
+			case 3:
+				kind = "queen";
 				piece1 = new Queen(0, kind, this);
 				piece2 = new Queen(1, kind, this);
 				break;
-			case 4:	kind = "king";
+			case 4:
+				kind = "king";
 				piece1 = new King(0, kind, this);
 				piece2 = new King(1, kind, this);
 				break;
@@ -69,8 +72,8 @@ public class BoardManager {
 				throw new IllegalArgumentException("Unexpected value: " + i);
 			}
 			if (piece1 != null && piece2 != null) {
-			locations.put(i + " " + 0, piece1);
-			locations.put(i + " " + 7, piece2);
+				locations.put(i + " " + 0, piece1);
+				locations.put(i + " " + 7, piece2);
 			}
 		}
 	}
@@ -88,20 +91,21 @@ public class BoardManager {
 	public Piece getPiece(String locationString) {
 		return locations.get(locationString);
 	}
-	
+
 	public void pawnToQueen(String locationString) {
 		int[] location = BoardManager.locationStringToArray(locationString);
 		Piece queen = new Queen(locations.get(locationString).getTeam(), "queen", this);
 		locations.put(locationString, queen);
 		ui.changeToQueen(location, queen.getImagePath());
 	}
-	
+
 	public void movePiece(String locationString1, String locationString2, HashMap<String, Piece> locationsLocal) {
 		Piece movingPiece = locationsLocal.get(locationString2);
 		locationsLocal.put(locationString1, movingPiece);
 		locationsLocal.remove(locationString2);
 		movingPiece.setFirstMove();
 	}
+
 	public void movePiece(String locationString1, String locationString2) {
 		movePiece(locationString1, locationString2, locations);
 	}
@@ -111,22 +115,22 @@ public class BoardManager {
 			return false;
 		return validMoves.get(draggingString).contains(dragOverString);
 	}
-	
+
 	public ArrayList<String> getValidMoves(String locationString) {
-		if (!validMoves.containsKey(locationString)) return new ArrayList<>();
+		if (!validMoves.containsKey(locationString))
+			return new ArrayList<>();
 		return validMoves.get(locationString);
 	}
 
-	
-	
-	//TODO new plan. updateMoves should ask possibleMoves(locations). 
-	//Then if (possibleMoves.get(xx).contains(kingLocations) && !isFriendly(xx)) 
-	//Then boardManager should movePiece(string, string, simulatedLocations), ask possibleMoves(simulatedLocations) ask if still checked (make sure same player!)
-	//If NOT checked, validMove.add(thatMove). Else its not valid.
+	// TODO new plan. updateMoves should ask possibleMoves(locations).
+	// Then if (possibleMoves.get(xx).contains(kingLocations) && !isFriendly(xx))
+	// Then boardManager should movePiece(string, string, simulatedLocations), ask
+	// possibleMoves(simulatedLocations) ask if still checked (make sure same
+	// player!)
+	// If NOT checked, validMove.add(thatMove). Else its not valid.
 	public void updateValidMoves() {
 		validMoves.clear();
 		HashMap<String, ArrayList<String>> potentialMoves = new HashMap<>();
-		boolean seenCheck = false;
 		for (String locationString : locations.keySet()) {
 			Piece piece = locations.get(locationString);
 			if (piece.getKind().equals("king")) {
@@ -137,39 +141,65 @@ public class BoardManager {
 				}
 			}
 			ArrayList<String> moves = piece.moves(locationString);
-			
+
 			potentialMoves.put(locationString, moves);
 		}
-		// Does it need to loop over locations AFTER kings locations are updated? or during?
-		for (String locationString : locations.keySet()) {
+		int teamsTurn = whosTurn();
+		ArrayList<String> potentialMovesOnlyCurrentTeamStrings = (ArrayList<String>) potentialMoves.keySet().stream().filter(
+				streamLocationString -> teamsTurn == locations.get(streamLocationString).getTeam()).collect(Collectors.toList());
+		validMoves = validateMoves(potentialMoves, potentialMovesOnlyCurrentTeamStrings);
+	}
+
+	private HashMap<String, ArrayList<String>> validateMoves(HashMap<String, ArrayList<String>> potentialMoves, ArrayList<String> potentialMovesOnlyCurrentTeamStrings) {
+		HashMap<String, ArrayList<String>> validatedMoves = new HashMap<>();
+		for (String locationString : potentialMovesOnlyCurrentTeamStrings) {
 			for (ArrayList<String> moves : potentialMoves.values()) {
-				for (String moveString : moves) {
-					if (!isFriendly(whiteKingLocation, locationString) && (moveString.equals(whiteKingLocation))
-							||(!isFriendly(blackKingLocation, locationString) && moveString.equals(blackKingLocation))) {
-						ui.setCheck(true);
-						seenCheck = true;
-					}
+				ArrayList<String> validMoves = (ArrayList<String>) moves.stream()
+						.filter(moveString -> 
+							(!(!isFriendly(whiteKingLocation, locationString) && (moveString.equals(whiteKingLocation)))
+								|| (!(!isFriendly(blackKingLocation, locationString) && moveString.equals(blackKingLocation))))
+						).collect(Collectors.toList());
+				validatedMoves.put(locationString, validMoves);
+			}
+		}
+		return validatedMoves;
+	}
+	
+	public boolean isThereCheck() {
+		//TODO I have no idea what ive done........
+		int teamsTurn = whosTurn();
+		ArrayList<String> locationStringOnlyOtherTeams = (ArrayList<String>) validMoves.keySet().stream().filter(
+				streamLocationString -> teamsTurn != locations.get(streamLocationString).getTeam()).collect(Collectors.toList());
+		for (String locationString : locationStringOnlyOtherTeams) {
+			for (String moveString : validMoves.get(locationString)) {
+				if (!isFriendly(whiteKingLocation, locationString) && (moveString.equals(whiteKingLocation))
+						||(!isFriendly(blackKingLocation, locationString) && moveString.equals(blackKingLocation))) {
+					return true;
 				}
 			}
 		}
-		if (seenCheck) {
-			//return false?
-		} else {
-			ui.setCheck(false);
-			validMoves.putAll(potentialMoves);
-			//return true?
-		}
+		return false;
+	}
+	public boolean isThereCheck() {
+		
 	}
 	
+	// original check
+
+
 	public void nextGameRound() {
 		gameRound++;
-		ui.whosTurn(gameRound % 2);
+		ui.updateInfoLabel(whosTurn());
 	}
+
 //	public int getGameRound() {
 //		return gameRound;
 //	}
+	public int whosTurn() {
+		return gameRound % 2;
+	}
 	public boolean isMyTurn(String locationString) {
-		return gameRound % 2 == locations.get(locationString).getTeam();
+		return whosTurn() == locations.get(locationString).getTeam();
 	}
 
 	public static int[] locationStringToArray(String locationString) {
@@ -184,8 +214,10 @@ public class BoardManager {
 				int y = Integer.parseInt(locationString.split(" ")[1]);
 				if ((team == 1 && y == 0) || (team == 0 && y == 7)) {
 					pawnToQueen(locationString);
-				} 
+				}
 			}
 		}
 	}
+
+
 }
