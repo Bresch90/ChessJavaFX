@@ -130,7 +130,12 @@ public class BoardManager {
 	// If NOT checked, validMove.add(thatMove). Else its not valid.
 	public void updateValidMoves() {
 		validMoves.clear();
+		validMoves.putAll(validateMoves(whosTurn(), getPotentialMovesAndUpdateKingsLocation()));
+	}
+
+	private HashMap<String, ArrayList<String>> getPotentialMovesAndUpdateKingsLocation() {
 		HashMap<String, ArrayList<String>> potentialMoves = new HashMap<>();
+		//update king locations and ask the piece how it can potentially move
 		for (String locationString : locations.keySet()) {
 			Piece piece = locations.get(locationString);
 			if (piece.getKind().equals("king")) {
@@ -141,30 +146,37 @@ public class BoardManager {
 				}
 			}
 			ArrayList<String> moves = piece.moves(locationString);
-
 			potentialMoves.put(locationString, moves);
 		}
-		int teamsTurn = whosTurn();
-		ArrayList<String> potentialMovesOnlyCurrentTeamStrings = (ArrayList<String>) potentialMoves.keySet().stream().filter(
-				streamLocationString -> teamsTurn == locations.get(streamLocationString).getTeam()).collect(Collectors.toList());
-		validMoves = validateMoves(potentialMoves, potentialMovesOnlyCurrentTeamStrings);
+		return potentialMoves;
 	}
 
-	private HashMap<String, ArrayList<String>> validateMoves(HashMap<String, ArrayList<String>> potentialMoves, ArrayList<String> potentialMovesOnlyCurrentTeamStrings) {
+	// validates that the moves from the current player wont result in a check
+	private HashMap<String, ArrayList<String>> validateMoves(int teamsTurn, HashMap<String, ArrayList<String>> potentialMoves) {
 		HashMap<String, ArrayList<String>> validatedMoves = new HashMap<>();
-		for (String locationString : potentialMovesOnlyCurrentTeamStrings) {
+		String kingLocation = (teamsTurn == 0 ? whiteKingLocation : blackKingLocation);
+		ArrayList<String> currentTeamLocationStrings = new ArrayList<>();
+		ArrayList<String> otherTeamLocationStrings = new ArrayList<>();
+		potentialMoves.keySet().stream().forEach(locStr -> {
+			if (teamsTurn == locations.get(locStr).getTeam()) {
+				currentTeamLocationStrings.add(locStr);
+			} else {
+				otherTeamLocationStrings.add(locStr);
+			}
+		});
+		
+		for (String locationString : currentTeamLocationStrings) {
 			for (ArrayList<String> moves : potentialMoves.values()) {
 				ArrayList<String> validMoves = (ArrayList<String>) moves.stream()
-						.filter(moveString -> 
-							(!(!isFriendly(whiteKingLocation, locationString) && (moveString.equals(whiteKingLocation)))
-								|| (!(!isFriendly(blackKingLocation, locationString) && moveString.equals(blackKingLocation))))
+						.filter(moveString -> //should isFriendly be there? is it necessary? and moveString? locationString?
+							(!(!isFriendly(kingLocation, locationString) && (moveString.equals(kingLocation))) )
 						).collect(Collectors.toList());
 				validatedMoves.put(locationString, validMoves);
 			}
 		}
 		return validatedMoves;
 	}
-	
+	//parameter, locations?, moves? ValidMoves?
 	public boolean isThereCheck() {
 		//TODO I have no idea what ive done........
 		int teamsTurn = whosTurn();
@@ -172,6 +184,7 @@ public class BoardManager {
 				streamLocationString -> teamsTurn != locations.get(streamLocationString).getTeam()).collect(Collectors.toList());
 		for (String locationString : locationStringOnlyOtherTeams) {
 			for (String moveString : validMoves.get(locationString)) {
+				// should only be one player? and simulate move?
 				if (!isFriendly(whiteKingLocation, locationString) && (moveString.equals(whiteKingLocation))
 						||(!isFriendly(blackKingLocation, locationString) && moveString.equals(blackKingLocation))) {
 					return true;
@@ -181,7 +194,7 @@ public class BoardManager {
 		return false;
 	}
 	public boolean isThereCheck() {
-		
+		// this.isThereCheck(xxx)
 	}
 	
 	// original check
