@@ -133,11 +133,11 @@ public class BoardManager {
 		validMoves.putAll(validateMoves(whosTurn(), getPotentialMovesAndUpdateKingsLocation()));
 	}
 
-	private HashMap<String, ArrayList<String>> getPotentialMovesAndUpdateKingsLocation() {
+	private HashMap<String, ArrayList<String>> getPotentialMovesAndUpdateKingsLocation(HashMap<String, Piece> locationsLocal) {
 		HashMap<String, ArrayList<String>> potentialMoves = new HashMap<>();
 		//update king locations and ask the piece how it can potentially move
-		for (String locationString : locations.keySet()) {
-			Piece piece = locations.get(locationString);
+		for (String locationString : locationsLocal.keySet()) {
+			Piece piece = locationsLocal.get(locationString);
 			if (piece.getKind().equals("king")) {
 				if (piece.getTeam() == 0) {
 					whiteKingLocation = locationString;
@@ -150,51 +150,54 @@ public class BoardManager {
 		}
 		return potentialMoves;
 	}
+	
+	private HashMap<String, ArrayList<String>> getPotentialMovesAndUpdateKingsLocation() {
+		return getPotentialMovesAndUpdateKingsLocation(locations);
+	}
 
-	// validates that the moves from the current player wont result in a check
+	// validates that the moves body: split in teams, get every move and simulate one at a time. Check if its checked after each move and revert back.
 	private HashMap<String, ArrayList<String>> validateMoves(int teamsTurn, HashMap<String, ArrayList<String>> potentialMoves) {
 		HashMap<String, ArrayList<String>> validatedMoves = new HashMap<>();
 		String kingLocation = (teamsTurn == 0 ? whiteKingLocation : blackKingLocation);
-		ArrayList<String> currentTeamLocationStrings = new ArrayList<>();
-		ArrayList<String> otherTeamLocationStrings = new ArrayList<>();
-		potentialMoves.keySet().stream().forEach(locStr -> {
-			if (teamsTurn == locations.get(locStr).getTeam()) {
-				currentTeamLocationStrings.add(locStr);
-			} else {
-				otherTeamLocationStrings.add(locStr);
-			}
-		});
+		ArrayList<String> currentTeamLocationStrings = (ArrayList<String>) locations.keySet().stream()
+				.filter(locStr -> teamsTurn == locations.get(locStr).getTeam())
+				.collect(Collectors.toList());
 		
+		//Simulate one move at a time.
 		for (String locationString : currentTeamLocationStrings) {
-			for (ArrayList<String> moves : potentialMoves.values()) {
-				ArrayList<String> validMoves = (ArrayList<String>) moves.stream()
-						.filter(moveString -> //should isFriendly be there? is it necessary? and moveString? locationString?
-							(!(!isFriendly(kingLocation, locationString) && (moveString.equals(kingLocation))) )
-						).collect(Collectors.toList());
-				validatedMoves.put(locationString, validMoves);
+			ArrayList<String> validMoves = new ArrayList<>();
+			for (String move : potentialMoves.get(locationString)) {
+				HashMap<String, Piece> simulatedLocations = new HashMap<>();
+				simulatedLocations.putAll(locations);
+				movePiece(locationString, move, simulatedLocations);
+				if (isThereCheck(teamsTurn, kingLocation , simulatedLocations)) continue;
+				validMoves.add(move);
 			}
+//				ArrayList<String> validMoves = (ArrayList<String>) potentialMoves.get(locationString).stream()
+//						.filter(moveString -> //should isFriendly be there? is it necessary? and moveString? locationString?
+//							(!(!isFriendly(kingLocation, locationString) && (moveString.equals(kingLocation))) )
+//						).collect(Collectors.toList());
+			validatedMoves.put(locationString, validMoves);
 		}
 		return validatedMoves;
 	}
-	//parameter, locations?, moves? ValidMoves?
-	public boolean isThereCheck() {
-		//TODO I have no idea what ive done........
-		int teamsTurn = whosTurn();
-		ArrayList<String> locationStringOnlyOtherTeams = (ArrayList<String>) validMoves.keySet().stream().filter(
-				streamLocationString -> teamsTurn != locations.get(streamLocationString).getTeam()).collect(Collectors.toList());
-		for (String locationString : locationStringOnlyOtherTeams) {
-			for (String moveString : validMoves.get(locationString)) {
+	
+	//should check simulated locations if there is a check by other team. ALSO needs to update moves for every simulation!!!!
+	public boolean isThereCheck(int teamsTurn, String kingLocation, HashMap<String, Piece> locationsLocal) {
+		HashMap<String, ArrayList<String>> newPotentialMoves = getPotentialMovesAndUpdateKingsLocation(locationsLocal);
+		ArrayList<String> otherTeamLocationStrings = (ArrayList<String>) locationsLocal.keySet().stream()
+				.filter(locStr -> teamsTurn != locationsLocal.get(locStr).getTeam())
+				.collect(Collectors.toList());
+		for (String locationString : otherTeamLocationStrings) {
+			for (String moveString : newPotentialMoves.get(locationString)) {
 				// should only be one player? and simulate move?
-				if (!isFriendly(whiteKingLocation, locationString) && (moveString.equals(whiteKingLocation))
-						||(!isFriendly(blackKingLocation, locationString) && moveString.equals(blackKingLocation))) {
-					return true;
-				}
+				if (!isFriendly(whiteKingLocation, locationString) && (moveString.equals(kingLocation))) return true;
 			}
 		}
 		return false;
 	}
 	public boolean isThereCheck() {
-		// this.isThereCheck(xxx)
+		return isThereCheck(whosTurn(), whiteKingLocation, locations);
 	}
 	
 	// original check
