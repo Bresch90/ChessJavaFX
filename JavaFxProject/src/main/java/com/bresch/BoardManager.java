@@ -99,17 +99,17 @@ public class BoardManager {
 		ui.changeToQueen(location, queen.getImagePath());
 	}
 
-	public void movePiece(String locationString1, String locationString2, HashMap<String, Piece> locationsLocal) {
+	public void movePiece(String locationString1, String locationString2, HashMap<String, Piece> locationsLocal, boolean simulated) {
 		Piece movingPiece = locationsLocal.get(locationString2);
+System.out.println("moving piece:["+movingPiece.getKind() +"]from["+locationString2+"]to["+locationString1+"]simulated["+simulated+"]");
 		locationsLocal.put(locationString1, movingPiece);
 		locationsLocal.remove(locationString2);
-		movingPiece.setFirstMove();
+		if (!simulated) movingPiece.setFirstMove();
 	}
-
+	
 	public void movePiece(String locationString1, String locationString2) {
-		movePiece(locationString1, locationString2, locations);
+		movePiece(locationString1, locationString2, locations, false);
 	}
-
 	public boolean isValidMove(String draggingString, String dragOverString) {
 		if (!validMoves.containsKey(draggingString))
 			return false;
@@ -130,12 +130,13 @@ public class BoardManager {
 	// If NOT checked, validMove.add(thatMove). Else its not valid.
 	public void updateValidMoves() {
 		validMoves.clear();
-		validMoves.putAll(validateMoves(whosTurn(), getPotentialMovesAndUpdateKingsLocation()));
+		validMoves.putAll(validateMoves(getPotentialMovesAndUpdateKingsLocation()));
 	}
 
 	private HashMap<String, ArrayList<String>> getPotentialMovesAndUpdateKingsLocation(HashMap<String, Piece> locationsLocal) {
 		HashMap<String, ArrayList<String>> potentialMoves = new HashMap<>();
 		//update king locations and ask the piece how it can potentially move
+System.out.println(locationsLocal.toString());
 		for (String locationString : locationsLocal.keySet()) {
 			Piece piece = locationsLocal.get(locationString);
 			if (piece.getKind().equals("king")) {
@@ -155,22 +156,28 @@ public class BoardManager {
 		return getPotentialMovesAndUpdateKingsLocation(locations);
 	}
 
-	// validates that the moves body: split in teams, get every move and simulate one at a time. Check if its checked after each move and revert back.
-	private HashMap<String, ArrayList<String>> validateMoves(int teamsTurn, HashMap<String, ArrayList<String>> potentialMoves) {
+	// validates the moves,
+	// body: split in teams, get every move and simulate one at a time. Check if its checked after each move and revert back.
+	private HashMap<String, ArrayList<String>> validateMoves(HashMap<String, ArrayList<String>> potentialMoves) {
 		HashMap<String, ArrayList<String>> validatedMoves = new HashMap<>();
-		String kingLocation = (teamsTurn == 0 ? whiteKingLocation : blackKingLocation);
+		int teamsTurn = whosTurn();
 		ArrayList<String> currentTeamLocationStrings = (ArrayList<String>) locations.keySet().stream()
 				.filter(locStr -> teamsTurn == locations.get(locStr).getTeam())
 				.collect(Collectors.toList());
 		
 		//Simulate one move at a time.
+		int times = 1;
 		for (String locationString : currentTeamLocationStrings) {
 			ArrayList<String> validMoves = new ArrayList<>();
 			for (String move : potentialMoves.get(locationString)) {
 				HashMap<String, Piece> simulatedLocations = new HashMap<>();
 				simulatedLocations.putAll(locations);
-				movePiece(locationString, move, simulatedLocations);
-				if (isThereCheck(teamsTurn, kingLocation , simulatedLocations)) continue;
+System.out.println("simulation number: " + times);
+				times++;
+				//moving piece:[movingPiece.getKind()]from[0 2]to[0 1]simulated[true] switched it around??
+				movePiece(move, locationString, simulatedLocations, true);
+				
+				if (isThereCheck(simulatedLocations)) continue;
 				validMoves.add(move);
 			}
 //				ArrayList<String> validMoves = (ArrayList<String>) potentialMoves.get(locationString).stream()
@@ -183,21 +190,25 @@ public class BoardManager {
 	}
 	
 	//should check simulated locations if there is a check by other team. ALSO needs to update moves for every simulation!!!!
-	public boolean isThereCheck(int teamsTurn, String kingLocation, HashMap<String, Piece> locationsLocal) {
+	public boolean isThereCheck(HashMap<String, Piece> locationsLocal) {
 		HashMap<String, ArrayList<String>> newPotentialMoves = getPotentialMovesAndUpdateKingsLocation(locationsLocal);
+		int teamsTurn = whosTurn();
+		String kingLocation = (teamsTurn == 0 ? whiteKingLocation : blackKingLocation);
 		ArrayList<String> otherTeamLocationStrings = (ArrayList<String>) locationsLocal.keySet().stream()
 				.filter(locStr -> teamsTurn != locationsLocal.get(locStr).getTeam())
 				.collect(Collectors.toList());
 		for (String locationString : otherTeamLocationStrings) {
 			for (String moveString : newPotentialMoves.get(locationString)) {
-				// should only be one player? and simulate move?
-				if (!isFriendly(whiteKingLocation, locationString) && (moveString.equals(kingLocation))) return true;
+				if (!isFriendly(kingLocation, locationString) && (moveString.equals(kingLocation))) {
+System.out.println("there is check!");
+					return true;
+				}
 			}
 		}
 		return false;
 	}
 	public boolean isThereCheck() {
-		return isThereCheck(whosTurn(), whiteKingLocation, locations);
+		return isThereCheck(locations);
 	}
 	
 	// original check
@@ -205,7 +216,6 @@ public class BoardManager {
 
 	public void nextGameRound() {
 		gameRound++;
-		ui.updateInfoLabel(whosTurn());
 	}
 
 //	public int getGameRound() {

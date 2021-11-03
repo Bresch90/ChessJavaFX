@@ -178,6 +178,7 @@ public class Ui extends Application {
 	
 	public void updateInfoLabel(int gameRound) {
 		String checked = (check ? "Checked! " : "");
+System.out.println("checked? " + checked);
 		infoLabel.setText(checked + "It is " + (gameRound == 0 ? "white's" : "black's") + " turn.");
 	}
 	
@@ -196,7 +197,7 @@ public class Ui extends Application {
 	public void resetColours() {
 		for (int i = 0, c = 1; i < buttons.length; i++) {
 			for (int j = 0; j < buttons[i].length; j++) {
-				buttons[i][j].setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white") + "; -fx-text-fill: transparent");
+				buttons[i][j].setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white") );// + "; -fx-text-fill: transparent");
 				c++;
 			}
 			c++;

@@ -63,9 +63,10 @@ public class Logic {
         ui.resetColours();
         
 		boardManager.isThereNewQueen();
-		ui.setCheck(boardManager.isThereCheck());
-		boardManager.updateValidMoves();
 		boardManager.nextGameRound();
+		ui.setCheck(boardManager.isThereCheck());
+		ui.updateInfoLabel(boardManager.whosTurn());
+		boardManager.updateValidMoves();
         
         
         //TODO also, Ask boardManager.possibleMoves(locations) -> logic for AI.
