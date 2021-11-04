@@ -78,14 +78,19 @@ public class BoardManager {
 		}
 	}
 
-	public boolean isFriendly(String loc1, String loc2) {
-		if (!locations.containsKey(loc1) || !locations.containsKey(loc2))
+	public boolean isFriendly(String loc1, String loc2, HashMap<String, Piece> locationsLocal) {
+		if (!locationsLocal.containsKey(loc1) || !locationsLocal.containsKey(loc2))
 			return true;
-		return locations.get(loc1).getTeam() == locations.get(loc2).getTeam();
+		return locationsLocal.get(loc1).getTeam() == locationsLocal.get(loc2).getTeam();
 	}
-
+	public boolean isFriendly(String loc1, String loc2) {
+		return isFriendly(loc1, loc2, locations);
+	}
+	public boolean isPieceAtLocation(String locationString, HashMap<String, Piece> locationsLocal) {
+		return locationsLocal.containsKey(locationString);
+	}
 	public boolean isPieceAtLocation(String locationString) {
-		return locations.containsKey(locationString);
+		return isPieceAtLocation(locationString, locations);
 	}
 
 	public Piece getPiece(String locationString) {
@@ -146,7 +151,7 @@ System.out.println(locationsLocal.toString());
 					blackKingLocation = locationString;
 				}
 			}
-			ArrayList<String> moves = piece.moves(locationString);
+			ArrayList<String> moves = piece.moves(locationString, locationsLocal);
 			potentialMoves.put(locationString, moves);
 		}
 		return potentialMoves;

@@ -2,6 +2,7 @@ package com.bresch;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class Knight extends Piece {
 
@@ -16,8 +17,8 @@ public class Knight extends Piece {
 	}
 	
 	@Override
-	public ArrayList<String> moves(String locationString) {
-		return super.movesPiece(locationString, moveDirections, maxRange);
+	public ArrayList<String> moves(String locationString, HashMap<String, Piece> locationsLocal) {
+		return super.movesPiece(locationString, moveDirections, maxRange, locationsLocal);
 	}
 	
 	private void moveKnight(ArrayList<int[]> moveDirections) {

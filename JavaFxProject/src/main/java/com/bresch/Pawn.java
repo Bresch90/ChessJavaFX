@@ -2,6 +2,7 @@ package com.bresch;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class Pawn extends Piece {
 
@@ -25,18 +26,19 @@ public class Pawn extends Piece {
 	}
 	
 	@Override
-	public ArrayList<String> moves(String locationString) {
+	public ArrayList<String> moves(String locationString, HashMap<String, Piece> locationsLocal) {
 		ArrayList<String> validMoves = new ArrayList<>();
 		int[] loc = BoardManager.locationStringToArray(locationString);
 		int x = loc[0];
 		int y = loc[1] + moveDirections;
 		String moveString = x + " " + y;
-		if (!boardManager.isPieceAtLocation(moveString)) {
+		if (!boardManager.isPieceAtLocation(moveString, locationsLocal)) {
 			validMoves.add(moveString);
 			if (getFirstMove()) {
 				// TODO make for first move move two etc. En Passant dont know how to..but
+				// this can be a problem when simulating more moves, that the piece doesnt get firstMove as true after first simulated move
 				String moveString2 = x + " " + (y + moveDirections);
-				if (!boardManager.isPieceAtLocation(moveString2)) {
+				if (!boardManager.isPieceAtLocation(moveString2, locationsLocal)) {
 					validMoves.add(moveString2);
 				}
 			}
@@ -52,7 +54,7 @@ public class Pawn extends Piece {
 			if (x < 0 || x > 7)
 				continue;
 			moveString = x + " " + y;
-			if (boardManager.isPieceAtLocation(moveString) && !boardManager.isFriendly(locationString, moveString)) {
+			if (boardManager.isPieceAtLocation(moveString, locationsLocal) && !boardManager.isFriendly(locationString, moveString, locationsLocal)) {
 				validMoves.add(moveString);
 			}
 		}

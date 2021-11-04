@@ -1,6 +1,7 @@
 package com.bresch;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Queen extends Piece{
 
@@ -16,8 +17,8 @@ public class Queen extends Piece{
 	}
 	
 	@Override
-	public ArrayList<String> moves(String locationString) {
-		return super.movesPiece(locationString, moveDirections, maxRange);
+	public ArrayList<String> moves(String locationString, HashMap<String, Piece> locationsLocal) {
+		return super.movesPiece(locationString, moveDirections, maxRange, locationsLocal);
 	}
 
 }

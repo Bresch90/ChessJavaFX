@@ -55,15 +55,13 @@ public abstract class Piece {
 		firstMove = false;
 	}
 	
-	//TODO should know all the moves i can do etc.
-	
-	public ArrayList<String> movesPiece(String locationString, ArrayList<int[]> moveDirections, int maxRange) {
+	public ArrayList<String> movesPiece(String locationString, ArrayList<int[]> moveDirections, int maxRange, HashMap<String, Piece> locationsLocal) {
 		int[] loc = BoardManager.locationStringToArray(locationString);
-		ArrayList<String> validMoves = new ArrayList<>();
+		ArrayList<String> potentialMoves = new ArrayList<>();
 		for (int[] moveDirection : moveDirections) {
-			moveRecursion(locationString, loc[0], loc[1], moveDirection, maxRange, validMoves);
+			moveRecursion(locationString, loc[0], loc[1], moveDirection, maxRange, potentialMoves, locationsLocal);
 		}
-		return validMoves;
+		return potentialMoves;
 	}
 	
 	public void moveSides(ArrayList<int[]> moveDirections) {
@@ -76,7 +74,7 @@ public abstract class Piece {
 				Arrays.asList(new int[] { 1, 1 }, new int[] { 1, -1 }, new int[] { -1, -1 }, new int[] { -1, 1 }));
 	}
 	
-	private void moveRecursion(String locationString, int x, int y, int[] moveDirection, int maxRange, ArrayList<String> validMoves) {
+	private void moveRecursion(String locationString, int x, int y, int[] moveDirection, int maxRange, ArrayList<String> potentialMoves, HashMap<String, Piece> locationsLocal) {
 		x += moveDirection[0];
 		y += moveDirection[1];
 		if (maxRange == 0 || x < 0 || x > 7 || y < 0 || y > 7)
@@ -84,14 +82,14 @@ public abstract class Piece {
 
 		String moveString = x + " " + y;
 
-		if (boardManager.isPieceAtLocation(moveString)) {
-			if (boardManager.isFriendly(locationString, moveString))
+		if (boardManager.isPieceAtLocation(moveString, locationsLocal)) {
+			if (boardManager.isFriendly(locationString, moveString, locationsLocal))
 				return;
 			maxRange = 1;
 		}
-		validMoves.add(moveString);
-		moveRecursion(locationString, x, y, moveDirection, maxRange - 1, validMoves);
+		potentialMoves.add(moveString);
+		moveRecursion(locationString, x, y, moveDirection, maxRange - 1, potentialMoves, locationsLocal);
 	}
 
-	public abstract ArrayList<String> moves(String locationString);
+	public abstract ArrayList<String> moves(String locationString, HashMap<String, Piece> locationsLocal);
 }
