@@ -176,10 +176,13 @@ public class Ui extends Application {
 		return check;
 	}
 	
-	public void updateInfoLabel(int gameRound) {
+	public void updateInfoLabel(int gameRound, boolean checkMate) {
+
 		String checked = (check ? "Checked! " : "");
-System.out.println("checked? " + checked);
 		infoLabel.setText(checked + "It is " + (gameRound == 0 ? "white's" : "black's") + " turn.");
+		if (checkMate) {
+			infoLabel.setText("Omg! "+(gameRound != 0 ? "white" : "black") + " won!");
+		}
 	}
 	
 	public void changeToQueen(int[] location, String imagePath) {
@@ -197,7 +200,7 @@ System.out.println("checked? " + checked);
 	public void resetColours() {
 		for (int i = 0, c = 1; i < buttons.length; i++) {
 			for (int j = 0; j < buttons[i].length; j++) {
-				buttons[i][j].setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white") );// + "; -fx-text-fill: transparent");
+				buttons[i][j].setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white") ); // + "; -fx-text-fill: transparent");
 				c++;
 			}
 			c++;

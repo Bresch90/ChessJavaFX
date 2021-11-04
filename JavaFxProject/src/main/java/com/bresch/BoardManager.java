@@ -17,8 +17,6 @@ public class BoardManager {
 	private HashMap<String, ArrayList<String>> validMoves;
 	private String whiteKingLocation;
 	private String blackKingLocation;
-	private HashMap<String, Piece> whiteLocations;
-	private HashMap<String, Piece> blackLocations;
 	private Ui ui;
 	private int gameRound;
 
@@ -92,7 +90,6 @@ public class BoardManager {
 	public boolean isPieceAtLocation(String locationString) {
 		return isPieceAtLocation(locationString, locations);
 	}
-
 	public Piece getPiece(String locationString) {
 		return locations.get(locationString);
 	}
@@ -136,6 +133,9 @@ public class BoardManager {
 	public void updateValidMoves() {
 		validMoves.clear();
 		validMoves.putAll(validateMoves(getPotentialMovesAndUpdateKingsLocation()));
+		if (validMoves.isEmpty()) {
+			
+		}
 	}
 
 	private HashMap<String, ArrayList<String>> getPotentialMovesAndUpdateKingsLocation(HashMap<String, Piece> locationsLocal) {
@@ -178,16 +178,14 @@ public class BoardManager {
 				simulatedLocations.putAll(locations);
 System.out.println("simulation number: " + times);
 				times++;
-				//moving piece:[movingPiece.getKind()]from[0 2]to[0 1]simulated[true] switched it around??
 				movePiece(move, locationString, simulatedLocations, true);
 				
-				if (isThereCheck(simulatedLocations)) continue;
+				if (isThereCheck(simulatedLocations)) {
+System.out.println("there is check! from:[" + locationString + "]->["+move+"]");
+					continue;
+				}
 				validMoves.add(move);
 			}
-//				ArrayList<String> validMoves = (ArrayList<String>) potentialMoves.get(locationString).stream()
-//						.filter(moveString -> //should isFriendly be there? is it necessary? and moveString? locationString?
-//							(!(!isFriendly(kingLocation, locationString) && (moveString.equals(kingLocation))) )
-//						).collect(Collectors.toList());
 			validatedMoves.put(locationString, validMoves);
 		}
 		return validatedMoves;
@@ -204,7 +202,6 @@ System.out.println("simulation number: " + times);
 		for (String locationString : otherTeamLocationStrings) {
 			for (String moveString : newPotentialMoves.get(locationString)) {
 				if (!isFriendly(kingLocation, locationString, locationsLocal) && (moveString.equals(kingLocation))) {
-System.out.println("there is check!");
 					return true;
 				}
 			}
