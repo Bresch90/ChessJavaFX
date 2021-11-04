@@ -106,7 +106,7 @@ public class BoardManager {
 
 	public void movePiece(String locationString1, String locationString2, HashMap<String, Piece> locationsLocal, boolean simulated) {
 		Piece movingPiece = locationsLocal.get(locationString2);
-System.out.println("moving piece:["+movingPiece.getKind() +"]from["+locationString2+"]to["+locationString1+"]simulated["+simulated+"]");
+//System.out.println("moving piece:["+movingPiece.getKind() +"]from["+locationString2+"]to["+locationString1+"]simulated["+simulated+"]");
 		locationsLocal.put(locationString1, movingPiece);
 		locationsLocal.remove(locationString2);
 		if (!simulated) movingPiece.setFirstMove();
@@ -141,7 +141,6 @@ System.out.println("moving piece:["+movingPiece.getKind() +"]from["+locationStri
 	private HashMap<String, ArrayList<String>> getPotentialMovesAndUpdateKingsLocation(HashMap<String, Piece> locationsLocal) {
 		HashMap<String, ArrayList<String>> potentialMoves = new HashMap<>();
 		//update king locations and ask the piece how it can potentially move
-System.out.println(locationsLocal.toString());
 		for (String locationString : locationsLocal.keySet()) {
 			Piece piece = locationsLocal.get(locationString);
 			if (piece.getKind().equals("king")) {
@@ -204,7 +203,7 @@ System.out.println("simulation number: " + times);
 				.collect(Collectors.toList());
 		for (String locationString : otherTeamLocationStrings) {
 			for (String moveString : newPotentialMoves.get(locationString)) {
-				if (!isFriendly(kingLocation, locationString) && (moveString.equals(kingLocation))) {
+				if (!isFriendly(kingLocation, locationString, locationsLocal) && (moveString.equals(kingLocation))) {
 System.out.println("there is check!");
 					return true;
 				}
