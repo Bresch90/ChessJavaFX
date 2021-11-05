@@ -35,7 +35,9 @@ public abstract class Piece {
 		//Changed to work with maven resources
 		this.imagePath = Piece.class.getResource("/" + kind + color + "t60.png").toString();
 	}
-
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////// Setters/Getters /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public int getTeam() {
 		return team;
 	}
@@ -55,6 +57,9 @@ public abstract class Piece {
 		firstMove = false;
 	}
 	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////// Moves //////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public ArrayList<String> movesPiece(String locationString, ArrayList<int[]> moveDirections, int maxRange, HashMap<String, Piece> locationsLocal) {
 		int[] loc = BoardManager.locationStringToArray(locationString);
 		ArrayList<String> potentialMoves = new ArrayList<>();
@@ -63,17 +68,6 @@ public abstract class Piece {
 		}
 		return potentialMoves;
 	}
-	
-	public void moveSides(ArrayList<int[]> moveDirections) {
-		moveDirections.addAll(
-				Arrays.asList(new int[] { 0, 1 }, new int[] { 0, -1 }, new int[] { 1, 0 }, new int[] { -1, 0 }));
-	}
-
-	public void moveDiagonally(ArrayList<int[]> moveDirections) {
-		moveDirections.addAll(
-				Arrays.asList(new int[] { 1, 1 }, new int[] { 1, -1 }, new int[] { -1, -1 }, new int[] { -1, 1 }));
-	}
-	
 	private void moveRecursion(String locationString, int x, int y, int[] moveDirection, int maxRange, ArrayList<String> potentialMoves, HashMap<String, Piece> locationsLocal) {
 		x += moveDirection[0];
 		y += moveDirection[1];
@@ -89,6 +83,14 @@ public abstract class Piece {
 		}
 		potentialMoves.add(moveString);
 		moveRecursion(locationString, x, y, moveDirection, maxRange - 1, potentialMoves, locationsLocal);
+	}
+	public void moveSides(ArrayList<int[]> moveDirections) {
+		moveDirections.addAll(
+				Arrays.asList(new int[] { 0, 1 }, new int[] { 0, -1 }, new int[] { 1, 0 }, new int[] { -1, 0 }));
+	}
+	public void moveDiagonally(ArrayList<int[]> moveDirections) {
+		moveDirections.addAll(
+				Arrays.asList(new int[] { 1, 1 }, new int[] { 1, -1 }, new int[] { -1, -1 }, new int[] { -1, 1 }));
 	}
 
 	public abstract ArrayList<String> moves(String locationString, HashMap<String, Piece> locationsLocal);

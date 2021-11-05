@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 //TODO undo move?
 //TODO save board?
-//TODO show gameround etc?
 //TODO Ai moves?
 
 public class BoardManager {
@@ -19,12 +18,14 @@ public class BoardManager {
 	private String blackKingLocation;
 	private Ui ui;
 	private int gameRound;
+	private int checkedForChecksNumber;
 
 	public BoardManager(Ui ui) {
 		this.ui = ui;
 		this.locations = new HashMap<>();
 		this.validMoves = new HashMap<>();
 		this.gameRound = 0;
+		this.checkedForChecksNumber = 1;
 	}
 
 	public void newGameSpawn() {
@@ -124,7 +125,8 @@ public class BoardManager {
 		return validMoves.get(locationString);
 	}
 
-	// TODO new plan. updateMoves should ask possibleMoves(locations).
+	// TODO new plan. 
+	// updateMoves should ask possibleMoves(locations).
 	// Then if (possibleMoves.get(xx).contains(kingLocations) && !isFriendly(xx))
 	// Then boardManager should movePiece(string, string, simulatedLocations), ask
 	// possibleMoves(simulatedLocations) ask if still checked (make sure same
@@ -163,7 +165,7 @@ public class BoardManager {
 	}
 
 	// validates the moves,
-	// body: split in teams, get every move and simulate one at a time. Check if its checked after each move and revert back.
+	// body: split in teams, get every move and simulate one at a time. Check if its checked after each move if its not, add to validatedMoves.
 	private HashMap<String, ArrayList<String>> validateMoves(HashMap<String, ArrayList<String>> potentialMoves) {
 		HashMap<String, ArrayList<String>> validatedMoves = new HashMap<>();
 		int teamsTurn = whosTurn();
@@ -178,8 +180,9 @@ public class BoardManager {
 			for (String move : potentialMoves.get(locationString)) {
 				HashMap<String, Piece> simulatedLocations = new HashMap<>();
 				simulatedLocations.putAll(locations);
-System.out.println("simulation number: " + times);
+System.out.println("simulationNumber: [" + times + "] checkedForChecks: [" + checkedForChecksNumber + "]");
 				times++;
+				checkedForChecksNumber = 1;
 				movePiece(move, locationString, simulatedLocations, true);
 				
 				if (isThereCheck(simulatedLocations)) {
@@ -203,6 +206,7 @@ System.out.println("there is check! from:[" + locationString + "]->["+move+"]");
 				.collect(Collectors.toList());
 		for (String locationString : otherTeamLocationStrings) {
 			for (String moveString : newPotentialMoves.get(locationString)) {
+				checkedForChecksNumber++;
 				if (!isFriendly(kingLocation, locationString, locationsLocal) && (moveString.equals(kingLocation))) {
 					return true;
 				}
@@ -213,28 +217,18 @@ System.out.println("there is check! from:[" + locationString + "]->["+move+"]");
 	public boolean isThereCheck() {
 		return isThereCheck(locations);
 	}
-	
-	// original check
-
-
 	public void nextGameRound() {
 		gameRound++;
 	}
-
-//	public int getGameRound() {
-//		return gameRound;
-//	}
 	public int whosTurn() {
 		return gameRound % 2;
 	}
 	public boolean isMyTurn(String locationString) {
 		return whosTurn() == locations.get(locationString).getTeam();
 	}
-
 	public static int[] locationStringToArray(String locationString) {
 		return Arrays.stream(locationString.split(" ")).mapToInt(Integer::parseInt).toArray();
 	}
-
 	public void isThereNewQueen() {
 		for (String locationString : locations.keySet()) {
 			Piece piece = locations.get(locationString);

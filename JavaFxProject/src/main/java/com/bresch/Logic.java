@@ -51,11 +51,12 @@ public class Logic {
 
 	public boolean onDragDropped(Button draggingButton, Button button) {
 		String draggingString = draggingButton.getText();
-		String dragOverString = button.getText();
-		//check if target spot is empty or does NOT contain a friendly piece
-        if (boardManager.isPieceAtLocation(dragOverString) && boardManager.isFriendly(dragOverString, draggingString)) return false;
+		String targetString = button.getText();
+		//return false if target spot is Not empty or contain a friendly piece
+        if (boardManager.isPieceAtLocation(targetString) && boardManager.isFriendly(targetString, draggingString)) return false;
+        
         button.setGraphic(new ImageView(new Image(boardManager.getPiece(draggingString).getImagePath())));
-    	boardManager.movePiece(dragOverString, draggingString);
+    	boardManager.movePiece(targetString, draggingString);
     	draggingButton.setGraphic(null);
         ui.setDraggingButton(null);
         ui.resetColours();
