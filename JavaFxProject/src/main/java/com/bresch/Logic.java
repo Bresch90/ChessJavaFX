@@ -13,12 +13,10 @@ public class Logic {
 
 	private Ui ui;
 	private BoardManager boardManager;
-	private int gameRound;
 	
 	public Logic(Ui ui, BoardManager boardManager) {
 		this.ui = ui;
 		this.boardManager = boardManager;
-		this.gameRound = 0;
 	}
 	
 	

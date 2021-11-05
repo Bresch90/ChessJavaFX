@@ -21,11 +21,12 @@ public class Ui extends Application {
 	private BoardManager boardManager;
 	private Label infoLabel;
 	private boolean check;
+	private boolean checkMate;
 	private Logic logic;
 	
 	public Ui() {
 		this.buttons = new Button[8][8];
-		this.check = false;
+		this.check = this.checkMate = false;
 		this.boardManager = new BoardManager(this);
 		this.logic = new Logic(this, boardManager);
 	}
@@ -168,7 +169,9 @@ public class Ui extends Application {
 	public void setDraggingButton(Button draggingButton) {
 		this.draggingButton = draggingButton;
 	}
-	
+	public void setCheckMate() {
+		checkMate = true;
+	}
 	public void setCheck(boolean bool) {
 		check = bool; 
 	}
@@ -176,7 +179,7 @@ public class Ui extends Application {
 		return check;
 	}
 	
-	public void updateInfoLabel(int gameRound, boolean checkMate) {
+	public void updateInfoLabel(int gameRound) {
 
 		String checked = (check ? "Checked! " : "");
 		infoLabel.setText(checked + "It is " + (gameRound == 0 ? "white's" : "black's") + " turn.");

@@ -133,8 +133,10 @@ public class BoardManager {
 	public void updateValidMoves() {
 		validMoves.clear();
 		validMoves.putAll(validateMoves(getPotentialMovesAndUpdateKingsLocation()));
-		if (validMoves.isEmpty()) {
-			
+		ArrayList<ArrayList<String>> seen = (ArrayList<ArrayList<String>>) validMoves.values().stream().filter(array -> !array.isEmpty()).collect(Collectors.toList());
+		if (seen.isEmpty()) {
+			ui.setCheckMate();
+			ui.updateInfoLabel(whosTurn());
 		}
 	}
 
