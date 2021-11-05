@@ -8,20 +8,16 @@ public class Pawn extends Piece {
 
 	private int moveDirections;
 	private BoardManager boardManager;
-	private int movesMade;
 	
 	public Pawn(int team, String kind, BoardManager boardManager) {
 		super(team, kind, boardManager);
 		this.boardManager = boardManager;
 		// Pawns can only move forward, white up, black down.
 		this.moveDirections = (team == 0 ? 1 : -1);
-		this.movesMade = 0;
-		
 	}
 	
 	@Override
 	public void setFirstMove() {
-		movesMade++;
 		super.setFirstMove();
 	}
 	
@@ -35,8 +31,7 @@ public class Pawn extends Piece {
 		if (!boardManager.isPieceAtLocation(moveString, locationsLocal)) {
 			validMoves.add(moveString);
 			if (getFirstMove()) {
-				// TODO make for first move move two etc. En Passant dont know how to..but
-				// this can be a problem when simulating more moves, that the piece doesnt get firstMove as true after first simulated move
+				// TODO check if this can be a problem when simulating more moves, that the piece doesnt get firstMove as true after first simulated move
 				String moveString2 = x + " " + (y + moveDirections);
 				if (!boardManager.isPieceAtLocation(moveString2, locationsLocal)) {
 					validMoves.add(moveString2);

@@ -76,7 +76,18 @@ public class BoardManager {
 			}
 		}
 	}
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////// Setters/Getters /////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	public void nextGameRound() {
+		gameRound++;
+	}
+	public int whosTurn() {
+		return gameRound % 2;
+	}
+	public static int[] locationStringToArray(String locationString) {
+		return Arrays.stream(locationString.split(" ")).mapToInt(Integer::parseInt).toArray();
+	}
 	public boolean isFriendly(String loc1, String loc2, HashMap<String, Piece> locationsLocal) {
 		if (!locationsLocal.containsKey(loc1) || !locationsLocal.containsKey(loc2))
 			return true;
@@ -91,10 +102,28 @@ public class BoardManager {
 	public boolean isPieceAtLocation(String locationString) {
 		return isPieceAtLocation(locationString, locations);
 	}
+	public boolean isMyTurn(String locationString) {
+		return whosTurn() == locations.get(locationString).getTeam();
+	}
 	public Piece getPiece(String locationString) {
 		return locations.get(locationString);
 	}
+	public void isThereNewQueen() {
+		for (String locationString : locations.keySet()) {
+			Piece piece = locations.get(locationString);
+			if (piece.getKind().equals("pawn")) {
+				int team = piece.getTeam();
+				int y = Integer.parseInt(locationString.split(" ")[1]);
+				if ((team == 1 && y == 0) || (team == 0 && y == 7)) {
+					pawnToQueen(locationString);
+				}
+			}
+		}
+	}
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////// public utility /////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public void pawnToQueen(String locationString) {
 		int[] location = BoardManager.locationStringToArray(locationString);
 		Piece queen = new Queen(locations.get(locationString).getTeam(), "queen", this);
@@ -124,7 +153,6 @@ public class BoardManager {
 			return new ArrayList<>();
 		return validMoves.get(locationString);
 	}
-
 	// TODO new plan. 
 	// updateMoves should ask possibleMoves(locations).
 	// Then if (possibleMoves.get(xx).contains(kingLocations) && !isFriendly(xx))
@@ -141,7 +169,32 @@ public class BoardManager {
 			ui.updateInfoLabel(whosTurn());
 		}
 	}
-
+	
+	//should check simulated locations if there is a check by other team. ALSO needs to update moves for every simulation!!!!
+	public boolean isThereCheck(HashMap<String, Piece> locationsLocal) {
+		HashMap<String, ArrayList<String>> newPotentialMoves = getPotentialMovesAndUpdateKingsLocation(locationsLocal);
+		int teamsTurn = whosTurn();
+		String kingLocation = (teamsTurn == 0 ? whiteKingLocation : blackKingLocation);
+		ArrayList<String> otherTeamLocationStrings = (ArrayList<String>) locationsLocal.keySet().stream()
+				.filter(locStr -> teamsTurn != locationsLocal.get(locStr).getTeam())
+				.collect(Collectors.toList());
+		for (String locationString : otherTeamLocationStrings) {
+			for (String moveString : newPotentialMoves.get(locationString)) {
+				checkedForChecksNumber++;
+				if (!isFriendly(kingLocation, locationString, locationsLocal) && (moveString.equals(kingLocation))) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	public boolean isThereCheck() {
+		return isThereCheck(locations);
+	}
+	
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////// private utility ////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	private HashMap<String, ArrayList<String>> getPotentialMovesAndUpdateKingsLocation(HashMap<String, Piece> locationsLocal) {
 		HashMap<String, ArrayList<String>> potentialMoves = new HashMap<>();
 		//update king locations and ask the piece how it can potentially move
@@ -172,7 +225,6 @@ public class BoardManager {
 		ArrayList<String> currentTeamLocationStrings = (ArrayList<String>) locations.keySet().stream()
 				.filter(locStr -> teamsTurn == locations.get(locStr).getTeam())
 				.collect(Collectors.toList());
-		
 		//Simulate one move at a time.
 		int times = 1;
 		for (String locationString : currentTeamLocationStrings) {
@@ -195,52 +247,4 @@ System.out.println("there is check! from:[" + locationString + "]->["+move+"]");
 		}
 		return validatedMoves;
 	}
-	
-	//should check simulated locations if there is a check by other team. ALSO needs to update moves for every simulation!!!!
-	public boolean isThereCheck(HashMap<String, Piece> locationsLocal) {
-		HashMap<String, ArrayList<String>> newPotentialMoves = getPotentialMovesAndUpdateKingsLocation(locationsLocal);
-		int teamsTurn = whosTurn();
-		String kingLocation = (teamsTurn == 0 ? whiteKingLocation : blackKingLocation);
-		ArrayList<String> otherTeamLocationStrings = (ArrayList<String>) locationsLocal.keySet().stream()
-				.filter(locStr -> teamsTurn != locationsLocal.get(locStr).getTeam())
-				.collect(Collectors.toList());
-		for (String locationString : otherTeamLocationStrings) {
-			for (String moveString : newPotentialMoves.get(locationString)) {
-				checkedForChecksNumber++;
-				if (!isFriendly(kingLocation, locationString, locationsLocal) && (moveString.equals(kingLocation))) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	public boolean isThereCheck() {
-		return isThereCheck(locations);
-	}
-	public void nextGameRound() {
-		gameRound++;
-	}
-	public int whosTurn() {
-		return gameRound % 2;
-	}
-	public boolean isMyTurn(String locationString) {
-		return whosTurn() == locations.get(locationString).getTeam();
-	}
-	public static int[] locationStringToArray(String locationString) {
-		return Arrays.stream(locationString.split(" ")).mapToInt(Integer::parseInt).toArray();
-	}
-	public void isThereNewQueen() {
-		for (String locationString : locations.keySet()) {
-			Piece piece = locations.get(locationString);
-			if (piece.getKind().equals("pawn")) {
-				int team = piece.getTeam();
-				int y = Integer.parseInt(locationString.split(" ")[1]);
-				if ((team == 1 && y == 0) || (team == 0 && y == 7)) {
-					pawnToQueen(locationString);
-				}
-			}
-		}
-	}
-
-
 }

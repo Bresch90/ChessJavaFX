@@ -20,6 +20,4 @@ public class Bishop extends Piece {
 		return super.movesPiece(locationString, moveDirections, maxRange, locationsLocal);
 	}
 
-	
-
 }
