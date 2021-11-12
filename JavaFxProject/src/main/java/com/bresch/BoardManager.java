@@ -108,9 +108,9 @@ public class BoardManager {
 	public Piece getPiece(String locationString) {
 		return locations.get(locationString);
 	}
-	public void isThereNewQueen() {
-		for (String locationString : locations.keySet()) {
-			Piece piece = locations.get(locationString);
+	public void isThereNewQueen(HashMap<String, Piece> locationsLocal) {
+		for (String locationString : locationsLocal.keySet()) {
+			Piece piece = locationsLocal.get(locationString);
 			if (piece.getKind().equals("pawn")) {
 				int team = piece.getTeam();
 				int y = Integer.parseInt(locationString.split(" ")[1]);
@@ -119,6 +119,12 @@ public class BoardManager {
 				}
 			}
 		}
+	}
+	public void isThereNewQueen() {
+		isThereNewQueen(locations);
+	}
+	public HashMap<String, Piece> getLocations() {
+		return locations;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,11 +153,13 @@ public class BoardManager {
 			return false;
 		return validMoves.get(draggingString).contains(dragOverString);
 	}
-
-	public ArrayList<String> getValidMoves(String locationString) {
+	public ArrayList<String> getValidMovesForLoc(String locationString) {
 		if (!validMoves.containsKey(locationString))
 			return new ArrayList<>();
 		return validMoves.get(locationString);
+	}
+	public HashMap<String, ArrayList<String>> getValidatedMoves(){
+		return validMoves;
 	}
 	// TODO new plan. 
 	// updateMoves should ask possibleMoves(locations).
@@ -160,14 +168,17 @@ public class BoardManager {
 	// possibleMoves(simulatedLocations) ask if still checked (make sure same
 	// player!)
 	// If NOT checked, validMove.add(thatMove). Else its not valid.
-	public void updateValidMoves() {
-		validMoves.clear();
-		validMoves.putAll(validateMoves(getPotentialMovesAndUpdateKingsLocation()));
-		ArrayList<ArrayList<String>> seen = (ArrayList<ArrayList<String>>) validMoves.values().stream().filter(array -> !array.isEmpty()).collect(Collectors.toList());
-		if (seen.isEmpty()) {
+	public void updateValidMoves(HashMap<String, ArrayList<String>> validatedMoves, int teamsTurn) {
+		validatedMoves.clear();
+		validatedMoves.putAll(validateMoves(getPotentialMovesAndUpdateKingsLocation(), teamsTurn));
+		ArrayList<ArrayList<String>> validMovesValues = (ArrayList<ArrayList<String>>) validatedMoves.values().stream().filter(array -> !array.isEmpty()).collect(Collectors.toList());
+		if (validMovesValues.isEmpty()) {
 			ui.setCheckMate();
 			ui.updateInfoLabel(whosTurn());
 		}
+	}
+	public void updateValidMoves() {
+		updateValidMoves(validMoves, whosTurn());
 	}
 	
 	//should check simulated locations if there is a check by other team. ALSO needs to update moves for every simulation!!!!
@@ -219,26 +230,25 @@ public class BoardManager {
 
 	// validates the moves,
 	// body: split in teams, get every move and simulate one at a time. Check if its checked after each move if its not, add to validatedMoves.
-	private HashMap<String, ArrayList<String>> validateMoves(HashMap<String, ArrayList<String>> potentialMoves) {
+	private HashMap<String, ArrayList<String>> validateMoves(HashMap<String, ArrayList<String>> potentialMoves, int teamsTurn) {
 		HashMap<String, ArrayList<String>> validatedMoves = new HashMap<>();
-		int teamsTurn = whosTurn();
 		ArrayList<String> currentTeamLocationStrings = (ArrayList<String>) locations.keySet().stream()
 				.filter(locStr -> teamsTurn == locations.get(locStr).getTeam())
 				.collect(Collectors.toList());
 		//Simulate one move at a time.
-		int times = 1;
+int times = 1;
 		for (String locationString : currentTeamLocationStrings) {
 			ArrayList<String> validMoves = new ArrayList<>();
 			for (String move : potentialMoves.get(locationString)) {
 				HashMap<String, Piece> simulatedLocations = new HashMap<>();
 				simulatedLocations.putAll(locations);
-System.out.println("simulationNumber: [" + times + "] checkedForChecks: [" + checkedForChecksNumber + "]");
-				times++;
-				checkedForChecksNumber = 1;
+//System.out.println("simulationNumber: [" + times + "] checkedForChecks: [" + checkedForChecksNumber + "]");
+times++;
+checkedForChecksNumber = 1;
 				movePiece(move, locationString, simulatedLocations, true);
 				
 				if (isThereCheck(simulatedLocations)) {
-System.out.println("there is check! from:[" + locationString + "]->["+move+"]");
+//System.out.println("there is check! from:[" + locationString + "]->["+move+"]");
 					continue;
 				}
 				validMoves.add(move);

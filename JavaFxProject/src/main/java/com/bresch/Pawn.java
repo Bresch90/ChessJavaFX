@@ -31,7 +31,7 @@ public class Pawn extends Piece {
 		if (!boardManager.isPieceAtLocation(moveString, locationsLocal)) {
 			validMoves.add(moveString);
 			if (getFirstMove()) {
-				// TODO check if this can be a problem when simulating more moves, that the piece doesnt get firstMove as true after first simulated move
+				// TODO check if this can be a problem when simulating more moves, that the piece doesn't get firstMove as true after first simulated move
 				String moveString2 = x + " " + (y + moveDirections);
 				if (!boardManager.isPieceAtLocation(moveString2, locationsLocal)) {
 					validMoves.add(moveString2);

@@ -2,6 +2,8 @@ package com.bresch;
 
 import java.util.ArrayList;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
@@ -140,11 +142,29 @@ public class Ui extends Application {
 				buttons[i][j].setOnDragDropped(e -> {
 					if (logic.onDragDropped(draggingButton, (Button)e.getSource())) {
 						e.setDropCompleted(true);
+// TODO OpponentsTurn??
+						runOponent();
+						
 					}
 				});
-		              
 			}
 		}
+	}
+	
+	//should be in logic.
+	private void runOponent() {
+		Task<Void> opponentRunner = new Task<Void>() {
+			@Override
+			protected Void call() throws Exception {
+				logic.opponentsTurn();
+				return null;
+			}
+		};
+		
+        Thread thread = new Thread(opponentRunner);
+        // don't let thread prevent JVM shutdown
+        thread.setDaemon(true);
+        thread.start();
 	}
 	
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,6 +181,10 @@ public class Ui extends Application {
 	}
 	public boolean getCheck() {
 		return check;
+	}
+	public Button getButton(String locStr) {
+		int[] loc = BoardManager.locationStringToArray(locStr);
+		return buttons[loc[0]][loc[1]];
 	}
 	
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -190,6 +214,14 @@ public class Ui extends Application {
 		for (int i = 0, c = 1; i < buttons.length; i++) {
 			for (int j = 0; j < buttons[i].length; j++) {
 				buttons[i][j].setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white") ); // + "; -fx-text-fill: transparent");
+				String locationString = String.valueOf(i) + " " + String.valueOf(j);
+				if (boardManager.isPieceAtLocation(locationString)) {
+					ImageView imageView = new ImageView(new Image(boardManager.getPiece(locationString).getImagePath()));
+//					imageView.fitHeightProperty().bind(buttons[i][j].heightProperty());;
+//					imageView.fitWidthProperty().bind(buttons[i][j].widthProperty());
+					
+					buttons[i][j].setGraphic(imageView);
+				}
 				c++;
 			}
 			c++;

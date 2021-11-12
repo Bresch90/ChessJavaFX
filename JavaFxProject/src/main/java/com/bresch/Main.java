@@ -5,3 +5,4 @@ public class Main {
 		Ui.go(args);
 	}
 }
+class MainJFXLauncher {public static void main(String[] args) {Main.main(args);}}
