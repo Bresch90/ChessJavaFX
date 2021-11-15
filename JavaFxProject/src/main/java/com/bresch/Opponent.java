@@ -40,7 +40,6 @@ System.out.println("making decision");
 			String locStr = friendlyLocStrings.get(index);
 			ArrayList<String> moveArray = validatedMoves.get(locStr);
 			if (moveArray == null || moveArray.isEmpty()) {
-System.out.println("Can't move ["+locStr+"]");
 				continue;
 			}
 			System.out.println(moveArray.toString());
@@ -51,12 +50,7 @@ System.out.println("Can't move ["+locStr+"]");
 			break;
 		}
 // END
-if (decisions.isEmpty()) {
-	System.out.println("* I give up *");
-	return decisions;
-}
 		// TODO teamsTurn % 2 in recursion. start with 1 the ++ every simulation. Check for valid moves every turn, for player and computer.
-System.out.println("* I decide on [" + decisions.get(0) + "] to [" + decisions.get(1) + "]");
 		return decisions;
 	}
 	

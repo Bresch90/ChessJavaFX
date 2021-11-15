@@ -1,8 +1,10 @@
 package com.bresch;
 
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -74,30 +76,52 @@ public class Logic {
         return true;
 	}
 	//TODO logic for computer opponent.
-	public void opponentsTurn() {
-		if (opponentActive && boardManager.whosTurn() < 2) {
-			opponentMakeDecision();
+	public void runOponent() throws InterruptedException {
+		for (int i = 0; i < 3; i++) {
+CountDownLatch latch = new CountDownLatch(1);
+		Task<Void> opponentTask = new Task<Void>() {
+			@Override
+			protected Void call() throws Exception {
+				if (opponentActive && boardManager.whosTurn() < 2) {
+					opponentMakeDecision(latch);
+					latch.await();
+				}
+				return null;
+			}
+			
+		};
+		
+        Thread thread = new Thread(opponentTask);
+        // don't let thread prevent JVM shutdown
+        thread.setDaemon(true);
+        thread.start();
+        System.out.println("hej");
+
 		}
 	}
-	private void opponentMakeDecision() {
+	
+	private void opponentMakeDecision(CountDownLatch latch) {
 		ArrayList<String> decisions = opponent.makeDecision();
 		if (decisions.isEmpty()) {
 			System.out.println("* I give up *");
 			return;
 		}
+System.out.println("* I decide on [" + decisions.get(0) + "] to [" + decisions.get(1) + "]");
 		Button draggingButton = ui.getButton(decisions.get(0));
 		Button targetButton = ui.getButton(decisions.get(1));
-        Platform.runLater(new Runnable(){
-			// do your GUI stuff here
 
+		Platform.runLater(new Runnable(){
+			// do your GUI stuff here
 			@Override
 			public void run() {
 				onDragDropped(draggingButton, targetButton);
-				
+				latch.countDown();
 			}
-			});
-
+		});
+System.out.println(latch.getCount());
 	}
+
+	
 
 	
 }

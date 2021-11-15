@@ -143,28 +143,17 @@ public class Ui extends Application {
 					if (logic.onDragDropped(draggingButton, (Button)e.getSource())) {
 						e.setDropCompleted(true);
 // TODO OpponentsTurn??
-						runOponent();
-						
+						try {
+							logic.runOponent();
+						} catch (InterruptedException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 					}
+					
 				});
 			}
 		}
-	}
-	
-	//should be in logic.
-	private void runOponent() {
-		Task<Void> opponentRunner = new Task<Void>() {
-			@Override
-			protected Void call() throws Exception {
-				logic.opponentsTurn();
-				return null;
-			}
-		};
-		
-        Thread thread = new Thread(opponentRunner);
-        // don't let thread prevent JVM shutdown
-        thread.setDaemon(true);
-        thread.start();
 	}
 	
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
