@@ -35,14 +35,15 @@ System.out.println("making decision");
 		HashMap<String, ArrayList<String>> validatedMoves = boardManager.getValidatedMoves();
 		
 //TEMPORARY RANDOM UTILITY
-		for (int i = 0; i < friendlyLocStrings.size() ; i++) {
+		for (int i = 0; i < 50 ; i++) {
+			if (i > 0) System.out.println("Woop woop its ["+i+"] --------------------------------------------------------------------------------------");
 			int index = random.nextInt(friendlyLocStrings.size());
 			String locStr = friendlyLocStrings.get(index);
 			ArrayList<String> moveArray = validatedMoves.get(locStr);
 			if (moveArray == null || moveArray.isEmpty()) {
 				continue;
 			}
-			System.out.println(moveArray.toString());
+System.out.println(moveArray.toString());
 			int index2 = random.nextInt(moveArray.size());
 			String moveStr = moveArray.get(index2);
 			decisions.add(locStr);

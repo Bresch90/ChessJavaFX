@@ -77,27 +77,30 @@ public class Logic {
 	}
 	//TODO logic for computer opponent.
 	public void runOponent() throws InterruptedException {
-		for (int i = 0; i < 3; i++) {
-CountDownLatch latch = new CountDownLatch(1);
+
 		Task<Void> opponentTask = new Task<Void>() {
 			@Override
 			protected Void call() throws Exception {
-				if (opponentActive && boardManager.whosTurn() < 2) {
-					opponentMakeDecision(latch);
-					latch.await();
+				for (int i = 0; i < 1001; i++) {
+					CountDownLatch latch = new CountDownLatch(1);
+					if (opponentActive && boardManager.whosTurn() < 2) {
+						opponentMakeDecision(latch);
+				        latch.await();
+					}
 				}
 				return null;
 			}
-			
 		};
 		
         Thread thread = new Thread(opponentTask);
         // don't let thread prevent JVM shutdown
         thread.setDaemon(true);
         thread.start();
-        System.out.println("hej");
+System.out.println("should wait now");
 
-		}
+System.out.println("hej");
+
+		
 	}
 	
 	private void opponentMakeDecision(CountDownLatch latch) {
@@ -118,7 +121,6 @@ System.out.println("* I decide on [" + decisions.get(0) + "] to [" + decisions.g
 				latch.countDown();
 			}
 		});
-System.out.println(latch.getCount());
 	}
 
 	
