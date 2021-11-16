@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -75,50 +74,45 @@ public class Logic {
 		boardManager.updateValidMoves();
         return true;
 	}
-	//TODO logic for computer opponent.
+	
+	// Separate thread for opponent so ui can continue running
 	public void runOponent() throws InterruptedException {
-
-		Task<Void> opponentTask = new Task<Void>() {
+        Thread opponentThread = new Thread(new Runnable() {
 			@Override
-			protected Void call() throws Exception {
-				for (int i = 0; i < 1001; i++) {
+			public void run(){
+				for (int i = 0; i < 1; i++) {
 					CountDownLatch latch = new CountDownLatch(1);
 					if (opponentActive && boardManager.whosTurn() < 2) {
-						opponentMakeDecision(latch);
-				        latch.await();
+				        try {
+				        	opponentMakeDecision(latch);
+							latch.await();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
 					}
 				}
-				return null;
 			}
-		};
-		
-        Thread thread = new Thread(opponentTask);
+        	
+        });
         // don't let thread prevent JVM shutdown
-        thread.setDaemon(true);
-        thread.start();
-System.out.println("should wait now");
-
-System.out.println("hej");
-
-		
+        opponentThread.setDaemon(true);
+        opponentThread.start();
 	}
 	
 	private void opponentMakeDecision(CountDownLatch latch) {
 		ArrayList<String> decisions = opponent.makeDecision();
 		if (decisions.isEmpty()) {
-			System.out.println("* I give up *");
+System.out.println("* I give up *");
 			return;
 		}
-System.out.println("* I decide on [" + decisions.get(0) + "] to [" + decisions.get(1) + "]");
 		Button draggingButton = ui.getButton(decisions.get(0));
 		Button targetButton = ui.getButton(decisions.get(1));
 
 		Platform.runLater(new Runnable(){
-			// do your GUI stuff here
+			// move piece for real in main thread
 			@Override
 			public void run() {
-				onDragDropped(draggingButton, targetButton);
-				latch.countDown();
+				if (onDragDropped(draggingButton, targetButton)) latch.countDown();
 			}
 		});
 	}
