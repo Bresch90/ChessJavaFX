@@ -37,6 +37,8 @@ this.random = new Random();
 		// recursion with multiple threads for the calculation?
 		
 //TEMPORARY RANDOM UTILITY
+		// multiple random tries needed? why? if king is checked, and tries are limited to friendlyLocStrings.size() (even +2) 
+		// it fails and gives up. Letting it go and moving on to scoring moves.
 		for (int i = 0; i < 25; i++) {
 			if (friendlyLocStrings.isEmpty()) return decisions;
 			int index = random.nextInt(friendlyLocStrings.size());
