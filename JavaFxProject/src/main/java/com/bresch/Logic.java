@@ -76,7 +76,7 @@ public class Logic {
 	}
 	
 	// Separate thread for opponent so ui can continue running
-	public void runOponent() throws InterruptedException {
+	public void runOpponent() {
         Thread opponentThread = new Thread(new Runnable() {
 			@Override
 			public void run(){

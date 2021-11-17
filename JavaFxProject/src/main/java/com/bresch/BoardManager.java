@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 //TODO undo move?
 //TODO save board?
-//TODO Ai moves?
 
 public class BoardManager {
 	private HashMap<String, Piece> locations;
@@ -161,13 +160,6 @@ public class BoardManager {
 	public HashMap<String, ArrayList<String>> getValidatedMoves(){
 		return validMoves;
 	}
-	// TODO new plan. 
-	// updateMoves should ask possibleMoves(locations).
-	// Then if (possibleMoves.get(xx).contains(kingLocations) && !isFriendly(xx))
-	// Then boardManager should movePiece(string, string, simulatedLocations), ask
-	// possibleMoves(simulatedLocations) ask if still checked (make sure same
-	// player!)
-	// If NOT checked, validMove.add(thatMove). Else its not valid.
 	public void updateValidMoves(HashMap<String, ArrayList<String>> validatedMoves, int teamsTurn) {
 		validatedMoves.clear();
 		validatedMoves.putAll(validateMoves(getPotentialMovesAndUpdateKingsLocation(), teamsTurn));
@@ -181,7 +173,6 @@ public class BoardManager {
 		updateValidMoves(validMoves, whosTurn());
 	}
 	
-	//should check simulated locations if there is a check by other team. ALSO needs to update moves for every simulation!!!!
 	public boolean isThereCheck(HashMap<String, Piece> locationsLocal) {
 		HashMap<String, ArrayList<String>> newPotentialMoves = getPotentialMovesAndUpdateKingsLocation(locationsLocal);
 		int teamsTurn = whosTurn();

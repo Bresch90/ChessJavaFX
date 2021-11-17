@@ -28,10 +28,13 @@ this.random = new Random();
 						friendlyLocStrings.add(locStr);
 					}
 		});
-		
-		
-		// TODO start with getting validMoves and pick a random move. Make that work first and look for bugs.
 		HashMap<String, ArrayList<String>> validatedMoves = boardManager.getValidatedMoves();
+		
+		
+		// TODO implement some sort of ranking of moves.
+		// new class with moves to store moves and score?
+		// only arraylist or hashmap with moves and score stored as string? e.g. 2 4:2 6 -> 20 (move from 2 4 to 2 6 gives a score of 20 in x moves forward)
+		// recursion with multiple threads for the calculation?
 		
 //TEMPORARY RANDOM UTILITY
 		for (int i = 0; i < 25; i++) {

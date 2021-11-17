@@ -142,13 +142,7 @@ public class Ui extends Application {
 				buttons[i][j].setOnDragDropped(e -> {
 					if (logic.onDragDropped(draggingButton, (Button)e.getSource())) {
 						e.setDropCompleted(true);
-// TODO OpponentsTurn??
-						try {
-							logic.runOponent();
-						} catch (InterruptedException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
+							logic.runOpponent();
 					}
 					
 				});
