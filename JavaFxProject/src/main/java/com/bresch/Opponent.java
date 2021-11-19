@@ -3,26 +3,31 @@ package com.bresch;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Opponent {
 	private BoardManager boardManager;
 	private Ui ui;
+	private int maxMoves;
 private Random random;
 	
 	public Opponent(BoardManager boardManager, Ui ui) {
 		this.boardManager = boardManager;
 		this.ui = ui;
+this.maxMoves = 1;
 this.random = new Random();
 	}
 
-	public ArrayList<String> makeDecision() {
+	public ArrayList<String> makeDecision() throws InterruptedException {
 		ArrayList<String> decisions = new ArrayList<>();
 		HashMap<String, Piece> locations = boardManager.getLocations();
 		ArrayList<String> enemyLocStrings = new ArrayList<>();
 		ArrayList<String> friendlyLocStrings = new ArrayList<>();
+		int teamsTurn = boardManager.whosTurn();
 		locations.keySet().stream().forEach(locStr -> {
-					if (locations.get(locStr).getTeam() != boardManager.whosTurn()) {
+					if (locations.get(locStr).getTeam() != teamsTurn) {
 						enemyLocStrings.add(locStr);
 					} else {
 						friendlyLocStrings.add(locStr);
@@ -35,28 +40,61 @@ this.random = new Random();
 		// new class with moves to store moves and score?
 		// only arraylist or hashmap with moves and score stored as string? e.g. 2 4:2 6 -> 20 (move from 2 4 to 2 6 gives a score of 20 in x moves forward)
 		// recursion with multiple threads for the calculation?
-		
-//TEMPORARY RANDOM UTILITY
-		// multiple random tries needed? why? if king is checked, and tries are limited to friendlyLocStrings.size() (even +2) 
-		// it fails and gives up. Letting it go and moving on to scoring moves.
-		for (int i = 0; i < 25; i++) {
-			if (friendlyLocStrings.isEmpty()) return decisions;
-			int index = random.nextInt(friendlyLocStrings.size());
-			String locStr = friendlyLocStrings.get(index);
+		ArrayList<MoveAndScore> movesBeeingEvaluated = new ArrayList<>();
+		for (String locStr : friendlyLocStrings ) {
 			ArrayList<String> moveArray = validatedMoves.get(locStr);
 			if (moveArray == null || moveArray.isEmpty()) {
-				friendlyLocStrings.remove(index);
 				continue;
 			}
-			int index2 = random.nextInt(moveArray.size());
-			String moveStr = moveArray.get(index2);
-			decisions.add(locStr);
-			decisions.add(moveStr);
-			break;
+			for (String moveStr : moveArray) {
+				movesBeeingEvaluated.add(new MoveAndScore(boardManager, teamsTurn, maxMoves, locStr, moveStr));
+			}
 		}
-// END
+		int numberOfMoves = (int) movesBeeingEvaluated.stream().count();
+		CountDownLatch moveLatch = new CountDownLatch(numberOfMoves);
+		movesBeeingEvaluated.stream().forEach(moveObject -> {
+			Thread thread = new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					moveObject.calculateScore();
+					moveLatch.countDown();
+				}
+			});
+			thread.setDaemon(true);
+			thread.start();
+			
+		});
+			moveLatch.await(20, TimeUnit.SECONDS);
+		
+		
 		// TODO teamsTurn % 2 in recursion. start with 1 then ++ every simulation. Check for valid moves every turn, for player and computer.
+//		makeRandom(decisions, friendlyLocStrings, validatedMoves);
 		return decisions;
+	}
+
+	private ArrayList<String> makeRandom(ArrayList<String> decisions, ArrayList<String> friendlyLocStrings, HashMap<String, ArrayList<String>> validatedMoves) {
+		//TEMPORARY RANDOM UTILITY
+				// multiple random tries needed? why? if king is checked, and tries are limited to friendlyLocStrings.size() (even +2) 
+				// it fails and gives up. Letting it go and moving on to scoring moves.
+				for (int i = 0; i < 25; i++) {
+					if (friendlyLocStrings.isEmpty()) return decisions;
+					int index = random.nextInt(friendlyLocStrings.size());
+					String locStr = friendlyLocStrings.get(index);
+					ArrayList<String> moveArray = validatedMoves.get(locStr);
+					if (moveArray == null || moveArray.isEmpty()) {
+						friendlyLocStrings.remove(index);
+						continue;
+					}
+					int index2 = random.nextInt(moveArray.size());
+					String moveStr = moveArray.get(index2);
+					decisions.add(locStr);
+					decisions.add(moveStr);
+					break;
+				}
+				return decisions;
+		// END
+		
 	}
 	
 	

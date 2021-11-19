@@ -80,11 +80,26 @@ public class Logic {
         Thread opponentThread = new Thread(new Runnable() {
 			@Override
 			public void run(){
+				// only for running continuously, aka computer against itself
 				for (int i = 0; i < 1; i++) {
 					CountDownLatch latch = new CountDownLatch(1);
 					if (opponentActive && boardManager.whosTurn() < 2) {
 				        try {
-				        	opponentMakeDecision(latch);
+				        	ArrayList<String> decisions = opponent.makeDecision();
+				    		if (decisions.isEmpty()) {
+				    System.out.println("* I give up *");
+				    			return;
+				    		}
+				    		Button draggingButton = ui.getButton(decisions.get(0));
+				    		Button targetButton = ui.getButton(decisions.get(1));
+
+				    		Platform.runLater(new Runnable(){
+				    			// move piece for real in main thread
+				    			@Override
+				    			public void run() {
+				    				if (onDragDropped(draggingButton, targetButton)) latch.countDown();
+				    			}
+				    		});
 							latch.await();
 						} catch (InterruptedException e) {
 							e.printStackTrace();
@@ -99,23 +114,6 @@ public class Logic {
         opponentThread.start();
 	}
 	
-	private void opponentMakeDecision(CountDownLatch latch) {
-		ArrayList<String> decisions = opponent.makeDecision();
-		if (decisions.isEmpty()) {
-System.out.println("* I give up *");
-			return;
-		}
-		Button draggingButton = ui.getButton(decisions.get(0));
-		Button targetButton = ui.getButton(decisions.get(1));
-
-		Platform.runLater(new Runnable(){
-			// move piece for real in main thread
-			@Override
-			public void run() {
-				if (onDragDropped(draggingButton, targetButton)) latch.countDown();
-			}
-		});
-	}
 
 	
 
