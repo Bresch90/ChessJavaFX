@@ -29,7 +29,7 @@ public class BoardManager {
 		this.gameRound = 0;
 		this.checkedForChecksNumber = 1;
 		this.scoreMap = new HashMap<>(Map.of("pawn", 1, "rook", 5, "knight", 3, "bishop", 3, "queen",
-				9, "king", 10));
+				9, "king", 3));
 	}
 
 	public void newGameSpawn() {
@@ -130,6 +130,9 @@ public class BoardManager {
 	public HashMap<String, Piece> getLocations() {
 		return locations;
 	}
+	public String getkings() {
+		return "["+ whiteKingLocation + "] [" + blackKingLocation + "]";
+	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////// public utility /////////////////////////////////////////////////////////////////////////////////////////
@@ -163,7 +166,8 @@ public class BoardManager {
 		return validMoves.get(locationString);
 	}
 	public HashMap<String, ArrayList<String>> getValidatedMoves(HashMap<String, Piece> locationsLocal, int teamsTurn){
-		return validateMoves(getPotentialMovesAndUpdateKingsLocation(locationsLocal), teamsTurn);
+//System.out.println("tring to get team ["+teamsTurn+"] s validatedmoves from: \n" + locationsLocal.toString());
+		return validateMoves(getPotentialMovesAndUpdateKingsLocation(locationsLocal), locationsLocal, teamsTurn);
 	}
 	public HashMap<String, ArrayList<String>> getValidatedMoves(){
 		return validMoves;
@@ -201,8 +205,8 @@ public class BoardManager {
 	public boolean isThereCheck() {
 		return isThereCheck(locations);
 	}
-	public int getScorePosition(String location) {
-		return scoreMap.get(location);
+	public int getScorePosition(String kind) {
+		return scoreMap.get(kind);
 	}
 	
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -241,6 +245,7 @@ public class BoardManager {
 int times = 1;
 		for (String locationString : currentTeamLocationStrings) {
 			ArrayList<String> validMoves = new ArrayList<>();
+			try {
 			for (String move : potentialMoves.get(locationString)) {
 				HashMap<String, Piece> simulatedLocations = new HashMap<>();
 				simulatedLocations.putAll(locationsLocal);
@@ -255,6 +260,11 @@ checkedForChecksNumber = 1;
 				}
 				validMoves.add(move);
 			}
+			} catch (Exception e){
+				e.printStackTrace();
+				System.out.println(potentialMoves.toString()+"\n" + locationString);
+				System.out.println(potentialMoves.get(locationString).toString());
+			}
 			validatedMoves.put(locationString, validMoves);
 		}
 		return validatedMoves;
@@ -262,4 +272,5 @@ checkedForChecksNumber = 1;
 	private HashMap<String, ArrayList<String>> validateMoves(HashMap<String, ArrayList<String>> potentialMoves, int teamsTurn){
 		return validateMoves(potentialMoves, locations, teamsTurn);
 	}
+	
 }

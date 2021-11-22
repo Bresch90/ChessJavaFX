@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Opponent {
+
 	private BoardManager boardManager;
 	private Ui ui;
 	private int maxMoves;
@@ -59,15 +60,27 @@ this.random = new Random();
 				public void run() {
 					moveObject.calculateScore();
 					moveLatch.countDown();
+//System.out.println(moveObject);
 				}
 			});
 			thread.setDaemon(true);
 			thread.start();
 			
 		});
-			moveLatch.await(20, TimeUnit.SECONDS);
+		moveLatch.await(60, TimeUnit.SECONDS);
+		moveLatch.await();
+		// next, biggest score is decision or random of biggest.
+		int maxScore = movesBeeingEvaluated.stream().mapToInt(MoveAndScore::getScore).max().orElse(Integer.MIN_VALUE);	
+		ArrayList<MoveAndScore> movesFiltered = (ArrayList<MoveAndScore>) movesBeeingEvaluated.stream().filter(object -> object.getScore() == maxScore).collect(Collectors.toList());
+//System.out.println(movesFiltered.stream().count() + "; " + movesBeeingEvaluated.toString());
 		
-		
+		if (maxScore == Integer.MIN_VALUE) {
+System.out.println("Didn't get a Max? How did this happen? Did i just loose??");
+		} else {
+			int randomIndex = random.nextInt((int) movesFiltered.stream().count());
+			decisions = movesFiltered.get(randomIndex).getDecision();
+System.out.println("getting filtered " + movesFiltered.get(randomIndex));
+		}
 		// TODO teamsTurn % 2 in recursion. start with 1 then ++ every simulation. Check for valid moves every turn, for player and computer.
 //		makeRandom(decisions, friendlyLocStrings, validatedMoves);
 		return decisions;

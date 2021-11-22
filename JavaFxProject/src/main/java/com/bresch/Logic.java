@@ -81,7 +81,7 @@ public class Logic {
 			@Override
 			public void run(){
 				// only for running continuously, aka computer against itself
-				for (int i = 0; i < 1; i++) {
+				for (int i = 0; i < 1001; i++) {
 					CountDownLatch latch = new CountDownLatch(1);
 					if (opponentActive && boardManager.whosTurn() < 2) {
 				        try {
@@ -92,15 +92,23 @@ public class Logic {
 				    		}
 				    		Button draggingButton = ui.getButton(decisions.get(0));
 				    		Button targetButton = ui.getButton(decisions.get(1));
-
+System.out.println("Number of moves calculated ["+decisions.get(2)+"]");
 				    		Platform.runLater(new Runnable(){
 				    			// move piece for real in main thread
 				    			@Override
 				    			public void run() {
-				    				if (onDragDropped(draggingButton, targetButton)) latch.countDown();
+//System.out.println("I am RunLater");
+				    				if (onDragDropped(draggingButton, targetButton)) {
+//System.out.println("It was true? why wait?");
+				    					latch.countDown();
+				    				} else {
+//System.out.println("It was false [" + draggingButton.getText() + "] to button ["+targetButton.getText()+"]");
+				    				}
+				    				
 				    			}
 				    		});
 							latch.await();
+//System.out.println("DONE WAITING");
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
