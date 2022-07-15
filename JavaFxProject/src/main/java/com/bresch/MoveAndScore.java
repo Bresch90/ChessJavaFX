@@ -45,19 +45,26 @@ counter = 0;
 		return moveFrom + " -> " + moveTo + " [" + score + "]";
 	}
 	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////// Recursive minimax ////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	// simulate ALL the enemy's moves and calculate points for that. Start there.
-	public void calculateScore(HashMap<String, Piece> localLocations, int maxMovesLocal) {
+	public int calculateScore(HashMap<String, Piece> localLocations, int maxMovesLocal, int localScore) {
 		HashMap<String, Piece> newLocations = new HashMap<>();
+	// create new clone locations
 		newLocations.putAll(localLocations);
 		if (newLocations.values().contains(null)) {
 System.out.println("when is here beeing null??\n" + newLocations.toString());
 		}
+	// EXIT CASE
 		if (maxMovesLocal < 1) {
 counter++;
 //System.out.println("counter is now = ["+counter+"]");
-			return;
+			return localScore;
 		}
 
+	// setup, sorting enemy/friendly
 		ArrayList<String> enemyLocStrings = new ArrayList<>();
 		ArrayList<String> friendlyLocStrings = new ArrayList<>();
 		int teamsTurn = (maxMovesLocal) % 2;
@@ -69,29 +76,38 @@ counter++;
 						friendlyLocStrings.add(locStr);
 					}
 		});
+
 		HashMap<String, ArrayList<String>> validatedMoves = boardManager.getValidatedMoves(newLocations, teamsTurn);
+		
+	// Main driver code for new children 
 		for (String locStr : friendlyLocStrings ) {
 			ArrayList<String> moveArray = validatedMoves.get(locStr);
 			if (moveArray == null || moveArray.isEmpty()) {
 				continue;
 			}
+	// for each piece (id by locStr and move to moveStr)
 			for (String moveStr : moveArray) {
 				HashMap<String, Piece> newLocations2 = new HashMap<>();
 				newLocations2.putAll(newLocations);
 				if (newLocations.containsKey(moveStr)) {
 //System.out.println("omg yes more score!");
 //System.out.println("tring to get pos ["+moveStr+"] s from: \n" + newLocations.toString());
-					updateScore(boardManager.getScorePosition(newLocations.get(moveStr).getKind()));
+					updateScore(((maxMovesLocal) % 2 == 0 ? 1 : -1) * boardManager.getScorePosition(newLocations.get(moveStr).getKind()));
 				}
 				boardManager.movePiece(moveStr, locStr, newLocations2, true);
-				calculateScore(newLocations2, maxMovesLocal-1);
+				calculateScore(newLocations2, maxMovesLocal-1, localScore);
+/// Dont know how to fix scoreing with minimax.
+/// should chose a path fitting the move that is the best move. Should this sum() all moves? then chose? is this logic too simple? seems like it.
+//				Tried implementing localScore but burned out.
+			
 			}
 		}
+		return localScore;
 		
 		
 	}
 	public void calculateScore() {
-		calculateScore(locations, maxMoves);
+		calculateScore(locations, maxMoves, 0);
 	}
 
 }

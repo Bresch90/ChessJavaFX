@@ -2,6 +2,7 @@ package com.bresch;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -17,7 +18,7 @@ private Random random;
 	public Opponent(BoardManager boardManager, Ui ui) {
 		this.boardManager = boardManager;
 		this.ui = ui;
-this.maxMoves = 1;
+this.maxMoves = 2;
 this.random = new Random();
 	}
 
@@ -73,7 +74,11 @@ this.random = new Random();
 		int maxScore = movesBeeingEvaluated.stream().mapToInt(MoveAndScore::getScore).max().orElse(Integer.MIN_VALUE);	
 		ArrayList<MoveAndScore> movesFiltered = (ArrayList<MoveAndScore>) movesBeeingEvaluated.stream().filter(object -> object.getScore() == maxScore).collect(Collectors.toList());
 //System.out.println(movesFiltered.stream().count() + "; " + movesBeeingEvaluated.toString());
-		
+//Diagnostics////////////
+for (MoveAndScore moveAndScore : movesFiltered) {
+System.out.println("are these the best moves? " + moveAndScore.toString());			
+		}
+/////////////////////////
 		if (maxScore == Integer.MIN_VALUE) {
 System.out.println("Didn't get a Max? How did this happen? Did i just loose??");
 		} else {
@@ -82,11 +87,11 @@ System.out.println("Didn't get a Max? How did this happen? Did i just loose??");
 System.out.println("getting filtered " + movesFiltered.get(randomIndex));
 		}
 		// TODO teamsTurn % 2 in recursion. start with 1 then ++ every simulation. Check for valid moves every turn, for player and computer.
-//		makeRandom(decisions, friendlyLocStrings, validatedMoves);
+//return makeRandom(decisions, friendlyLocStrings, validatedMoves);
 		return decisions;
 	}
 
-	private ArrayList<String> makeRandom(ArrayList<String> decisions, ArrayList<String> friendlyLocStrings, HashMap<String, ArrayList<String>> validatedMoves) {
+	public ArrayList<String> makeRandom(ArrayList<String> decisions, ArrayList<String> friendlyLocStrings, HashMap<String, ArrayList<String>> validatedMoves) {
 		//TEMPORARY RANDOM UTILITY
 				// multiple random tries needed? why? if king is checked, and tries are limited to friendlyLocStrings.size() (even +2) 
 				// it fails and gives up. Letting it go and moving on to scoring moves.

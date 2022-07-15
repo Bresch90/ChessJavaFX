@@ -85,7 +85,7 @@ public class Logic {
 					CountDownLatch latch = new CountDownLatch(1);
 					if (opponentActive && boardManager.whosTurn() < 2) {
 				        try {
-				        	ArrayList<String> decisions = opponent.makeDecision();
+				        	ArrayList<String> decisions = opponent.makeDecision();       	
 				    		if (decisions.isEmpty()) {
 				    System.out.println("* I give up *");
 				    			return;
