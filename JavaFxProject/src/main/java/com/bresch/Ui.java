@@ -94,9 +94,9 @@ public class Ui extends Application {
 	
 	private void setNewGame(GridPane grid) {
 // Special cases for evaluation
-		boardManager.specialStateSpawnKingMakeUnblockedKill();
+//		boardManager.specialStateSpawnKingMakeUnblockedKill();
 //		boardManager.specialStateSpawn();
-//		boardManager.newGameSpawn();
+		boardManager.newGameSpawn();
 		for (int i = 0, c = 1; i < buttons.length; i++) {
 			for (int j = 0; j < buttons[i].length; j++) {
 				String locationString = String.valueOf(i) + " " + String.valueOf(j);

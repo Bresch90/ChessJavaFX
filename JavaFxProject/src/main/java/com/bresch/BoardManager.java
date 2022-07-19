@@ -286,22 +286,18 @@ public class BoardManager {
 	}
 
 	// validates the moves,
-	// body: split in teams, get every move and simulate one at a time. Check if its checked after each move if its not, add to validatedMoves.
+	// needs to be reworked. Checking through moves here to validate and also in minimax after each step.
 	private HashMap<String, ArrayList<String>> validateMoves(HashMap<String, ArrayList<String>> potentialMoves, HashMap<String, Piece> locationsLocal, int teamsTurn) {
 		HashMap<String, ArrayList<String>> validatedMoves = new HashMap<>();
 		ArrayList<String> currentTeamLocationStrings = (ArrayList<String>) locationsLocal.keySet().stream()
 				.filter(locStr -> teamsTurn == locationsLocal.get(locStr).getTeam())
 				.collect(Collectors.toList());
-		//Simulate one move at a time.
-int times = 1;
 		for (String locationString : currentTeamLocationStrings) {
 			ArrayList<String> validMoves = new ArrayList<>();
 			try {
 			for (String move : potentialMoves.get(locationString)) {
 				HashMap<String, Piece> simulatedLocations = new HashMap<>();
 				simulatedLocations.putAll(locationsLocal);
-//System.out.println("simulationNumber: [" + times + "] checkedForChecks: [" + checkedForChecksNumber + "]");
-times++;
 checkedForChecksNumber = 1;
 				movePiece(move, locationString, simulatedLocations, true);
 				

@@ -84,11 +84,11 @@ long timeEnd = System.nanoTime();
 		moveLatch.await();
 		
 long timeInValidateMovesTotal = movesBeeingEvaluated.get(0).getTimeValidateMoves();
-System.out.println("Time inside ValidateMoves:["+ timeInValidateMovesTotal/1000000+ "ms]");
 long timeInMoveTotalTotal = (timeEnd - timeStart);
 System.out.println("Time total i MoveAndScore:["+ timeInMoveTotalTotal/1000000+ "ms]");
 System.out.println("Time inside MoveAndScore without ValidateMoves:["+ (timeInMoveTotalTotal-timeInValidateMovesTotal)/1000000+ "ms]");
 System.out.println("Time inside ValidateMoves:["+ timeInValidateMovesTotal/1000000+ "ms]");
+System.out.println("Time inside ValidateMoves:[2652ms] before optimization for first black with [62398] number of moves.");
 		// next, biggest score is decision or random of biggest. if maximizing
 		if (teamsTurn == 0) {
 			int maxScore = movesBeeingEvaluated.stream().mapToInt(MoveAndScore::getScore).max().orElse(Integer.MIN_VALUE);	
@@ -106,7 +106,7 @@ System.out.println("Time inside ValidateMoves:["+ timeInValidateMovesTotal/10000
 				decisions = movesFiltered.get(randomIndex).getDecision();
 	System.out.println("getting filtered " + movesFiltered.get(randomIndex));
 			}
-			// TODO teamsTurn % 2 in recursion. start with 1 then ++ every simulation. Check for valid moves every turn, for player and computer.
+
 	//return makeRandom(decisions, friendlyLocStrings, validatedMoves);
 		} else {
 	// If minimizing player (Black)
@@ -125,7 +125,7 @@ System.out.println("Time inside ValidateMoves:["+ timeInValidateMovesTotal/10000
 				decisions = movesFiltered.get(randomIndex).getDecision();
 	System.out.println("getting filtered " + movesFiltered.get(randomIndex));
 			}
-			// TODO teamsTurn % 2 in recursion. start with 1 then ++ every simulation. Check for valid moves every turn, for player and computer.
+
 	//return makeRandom(decisions, friendlyLocStrings, validatedMoves);
 		}
 		return decisions;
