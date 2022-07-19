@@ -21,9 +21,25 @@
 				<groupId>org.openjfx</groupId>
 				<artifactId>javafx-maven-plugin</artifactId>
 				<version>0.0.8</version>
-				<configuration>
-					<mainClass>com.bresch.Main</mainClass>
-				</configuration>
+				    <executions>
+        				<execution>
+        				<!-- Default configuration for running -->
+        				 <id>default-cli</id>
+							<configuration>
+								<mainClass>com.bresch.Main</mainClass>
+							</configuration>
+        				</execution>
+				 		<!-- Debug configuration for debugging -->
+				    	<execution>
+					    	<id>debug</id>
+								<configuration>
+									<options>
+		                    			<option>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000</option>
+		                			</options>
+								<mainClass>com.bresch.Main</mainClass>
+								</configuration>
+        				</execution>
+        		</executions>
 			</plugin>
 		</plugins>
 	</build>

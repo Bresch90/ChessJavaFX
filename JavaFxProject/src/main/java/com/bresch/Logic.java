@@ -1,6 +1,7 @@
 package com.bresch;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.concurrent.CountDownLatch;
 
 import javafx.application.Platform;
@@ -77,11 +78,15 @@ public class Logic {
 	
 	// Separate thread for opponent so ui can continue running
 	public void runOpponent() {
+		Scanner userInput = new Scanner(System.in);
         Thread opponentThread = new Thread(new Runnable() {
 			@Override
 			public void run(){
 				// only for running continuously, aka computer against itself
 				for (int i = 0; i < 1001; i++) {
+		System.out.println("Pausing until enter");
+		userInput.nextLine();
+		System.out.println("Calculating");
 					CountDownLatch latch = new CountDownLatch(1);
 					if (opponentActive && boardManager.whosTurn() < 2) {
 				        try {
@@ -114,6 +119,7 @@ System.out.println("Number of moves calculated ["+decisions.get(2)+"]");
 						}
 					}
 				}
+				userInput.close();
 			}
         	
         });
@@ -121,9 +127,7 @@ System.out.println("Number of moves calculated ["+decisions.get(2)+"]");
         opponentThread.setDaemon(true);
         opponentThread.start();
 	}
-	
-
-	
+		
 
 	
 }

@@ -9,30 +9,31 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Opponent {
-
 	private BoardManager boardManager;
 	private Ui ui;
 	private int maxMoves;
+	private int teamsTurn;
 private Random random;
 	
 	public Opponent(BoardManager boardManager, Ui ui) {
 		this.boardManager = boardManager;
 		this.ui = ui;
-this.maxMoves = 2;
+this.maxMoves = 4;
 this.random = new Random();
 	}
 
 	public ArrayList<String> makeDecision() throws InterruptedException {
+		
 		ArrayList<String> decisions = new ArrayList<>();
 		HashMap<String, Piece> locations = boardManager.getLocations();
-		ArrayList<String> enemyLocStrings = new ArrayList<>();
-		ArrayList<String> friendlyLocStrings = new ArrayList<>();
-		int teamsTurn = boardManager.whosTurn();
+		ArrayList<String> blackLocStrings = new ArrayList<>();
+		ArrayList<String> whiteLocStrings = new ArrayList<>();
+		teamsTurn = boardManager.whosTurn();
 		locations.keySet().stream().forEach(locStr -> {
-					if (locations.get(locStr).getTeam() != teamsTurn) {
-						enemyLocStrings.add(locStr);
+					if (locations.get(locStr).getTeam() == 0) {
+						whiteLocStrings.add(locStr);
 					} else {
-						friendlyLocStrings.add(locStr);
+						blackLocStrings.add(locStr);
 					}
 		});
 		HashMap<String, ArrayList<String>> validatedMoves = boardManager.getValidatedMoves();
@@ -43,7 +44,7 @@ this.random = new Random();
 		// only arraylist or hashmap with moves and score stored as string? e.g. 2 4:2 6 -> 20 (move from 2 4 to 2 6 gives a score of 20 in x moves forward)
 		// recursion with multiple threads for the calculation?
 		ArrayList<MoveAndScore> movesBeeingEvaluated = new ArrayList<>();
-		for (String locStr : friendlyLocStrings ) {
+		for (String locStr : (teamsTurn == 0 ? whiteLocStrings : blackLocStrings) ) {
 			ArrayList<String> moveArray = validatedMoves.get(locStr);
 			if (moveArray == null || moveArray.isEmpty()) {
 				continue;
@@ -54,42 +55,81 @@ this.random = new Random();
 		}
 		int numberOfMoves = (int) movesBeeingEvaluated.stream().count();
 		CountDownLatch moveLatch = new CountDownLatch(numberOfMoves);
-		movesBeeingEvaluated.stream().forEach(moveObject -> {
-			Thread thread = new Thread(new Runnable() {
-				
-				@Override
-				public void run() {
-					moveObject.calculateScore();
-					moveLatch.countDown();
-//System.out.println(moveObject);
-				}
-			});
-			thread.setDaemon(true);
-			thread.start();
-			
-		});
+
+//// To run in single thread for debug
+long timeStart = System.nanoTime();
+		for (MoveAndScore moveObject : movesBeeingEvaluated) {
+			moveObject.calculateScore();
+			moveLatch.countDown();
+		}
+long timeEnd = System.nanoTime();
+
+//// To run in multi thread for performance		
+		
+//		movesBeeingEvaluated.stream().forEach(moveObject -> {
+//			Thread thread = new Thread(new Runnable() {
+//				
+//				@Override
+//				public void run() {
+//					moveObject.calculateScore();
+//					moveLatch.countDown();
+////System.out.println(moveObject);
+//				}
+//			});
+//			thread.setDaemon(true);
+//			thread.start();
+//			
+//		});
 		moveLatch.await(60, TimeUnit.SECONDS);
 		moveLatch.await();
-		// next, biggest score is decision or random of biggest.
-		int maxScore = movesBeeingEvaluated.stream().mapToInt(MoveAndScore::getScore).max().orElse(Integer.MIN_VALUE);	
-		ArrayList<MoveAndScore> movesFiltered = (ArrayList<MoveAndScore>) movesBeeingEvaluated.stream().filter(object -> object.getScore() == maxScore).collect(Collectors.toList());
-//System.out.println(movesFiltered.stream().count() + "; " + movesBeeingEvaluated.toString());
-//Diagnostics////////////
-for (MoveAndScore moveAndScore : movesFiltered) {
-System.out.println("are these the best moves? " + moveAndScore.toString());			
-		}
-/////////////////////////
-		if (maxScore == Integer.MIN_VALUE) {
-System.out.println("Didn't get a Max? How did this happen? Did i just loose??");
+		
+long timeInValidateMovesTotal = movesBeeingEvaluated.get(0).getTimeValidateMoves();
+System.out.println("Time inside ValidateMoves:["+ timeInValidateMovesTotal/1000000+ "ms]");
+long timeInMoveTotalTotal = (timeEnd - timeStart);
+System.out.println("Time total i MoveAndScore:["+ timeInMoveTotalTotal/1000000+ "ms]");
+System.out.println("Time inside MoveAndScore without ValidateMoves:["+ (timeInMoveTotalTotal-timeInValidateMovesTotal)/1000000+ "ms]");
+System.out.println("Time inside ValidateMoves:["+ timeInValidateMovesTotal/1000000+ "ms]");
+		// next, biggest score is decision or random of biggest. if maximizing
+		if (teamsTurn == 0) {
+			int maxScore = movesBeeingEvaluated.stream().mapToInt(MoveAndScore::getScore).max().orElse(Integer.MIN_VALUE);	
+			ArrayList<MoveAndScore> movesFiltered = (ArrayList<MoveAndScore>) movesBeeingEvaluated.stream().filter(object -> object.getScore() == maxScore).collect(Collectors.toList());
+	//System.out.println(movesFiltered.stream().count() + "; " + movesBeeingEvaluated.toString());
+	//Diagnostics////////////
+			for (MoveAndScore moveAndScore : movesFiltered) {
+	System.out.println("are these the best moves? " + moveAndScore.toString());			
+			}
+	/////////////////////////
+			if (maxScore == Integer.MIN_VALUE) {
+	System.out.println("Didn't get a Max? How did this happen? Did i just loose??");
+			} else {
+				int randomIndex = random.nextInt((int) movesFiltered.stream().count());
+				decisions = movesFiltered.get(randomIndex).getDecision();
+	System.out.println("getting filtered " + movesFiltered.get(randomIndex));
+			}
+			// TODO teamsTurn % 2 in recursion. start with 1 then ++ every simulation. Check for valid moves every turn, for player and computer.
+	//return makeRandom(decisions, friendlyLocStrings, validatedMoves);
 		} else {
-			int randomIndex = random.nextInt((int) movesFiltered.stream().count());
-			decisions = movesFiltered.get(randomIndex).getDecision();
-System.out.println("getting filtered " + movesFiltered.get(randomIndex));
+	// If minimizing player (Black)
+			int minScore = movesBeeingEvaluated.stream().mapToInt(MoveAndScore::getScore).min().orElse(Integer.MAX_VALUE);	
+			ArrayList<MoveAndScore> movesFiltered = (ArrayList<MoveAndScore>) movesBeeingEvaluated.stream().filter(object -> object.getScore() == minScore).collect(Collectors.toList());
+	//System.out.println(movesFiltered.stream().count() + "; " + movesBeeingEvaluated.toString());
+	//Diagnostics////////////
+			for (MoveAndScore moveAndScore : movesFiltered) {
+	System.out.println("are these the best moves? " + moveAndScore.toString());			
+			}
+	/////////////////////////
+			if (minScore == Integer.MAX_VALUE) {
+	System.out.println("Didn't get a Max? How did this happen? Did i just loose??");
+			} else {
+				int randomIndex = random.nextInt((int) movesFiltered.stream().count());
+				decisions = movesFiltered.get(randomIndex).getDecision();
+	System.out.println("getting filtered " + movesFiltered.get(randomIndex));
+			}
+			// TODO teamsTurn % 2 in recursion. start with 1 then ++ every simulation. Check for valid moves every turn, for player and computer.
+	//return makeRandom(decisions, friendlyLocStrings, validatedMoves);
 		}
-		// TODO teamsTurn % 2 in recursion. start with 1 then ++ every simulation. Check for valid moves every turn, for player and computer.
-//return makeRandom(decisions, friendlyLocStrings, validatedMoves);
 		return decisions;
-	}
+	} 
 
 	public ArrayList<String> makeRandom(ArrayList<String> decisions, ArrayList<String> friendlyLocStrings, HashMap<String, ArrayList<String>> validatedMoves) {
 		//TEMPORARY RANDOM UTILITY

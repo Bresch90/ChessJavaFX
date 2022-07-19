@@ -29,9 +29,11 @@ public class BoardManager {
 		this.gameRound = 0;
 		this.checkedForChecksNumber = 1;
 		this.scoreMap = new HashMap<>(Map.of("pawn", 1, "rook", 5, "knight", 3, "bishop", 3, "queen",
-				9, "king", 3));
+				9, "king", 90));
 	}
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////// Game States /////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public void newGameSpawn() {
 		locations.clear();
 		gameRound = 0;
@@ -79,6 +81,37 @@ public class BoardManager {
 				locations.put(i + " " + 7, piece2);
 			}
 		}
+	}
+	
+/////////////////////////////////////////////// Special States /////////////////////////////////////////////////////////
+	public void specialStateSpawn() {
+		locations.clear();
+		gameRound = 0;
+
+			locations.put(3 + " " + 2, new Pawn(0, "pawn", this));
+			locations.put(3 + " " + 5, new Pawn(1, "pawn", this));
+			locations.put(4 + " " + 2, new King(0, "king", this));
+			locations.put(4 + " " + 5, new King(1, "king", this));
+			locations.put(5 + " " + 2, new Queen(0, "queen", this));
+			locations.put(5 + " " + 5, new Queen(1, "queen", this));
+			locations.put(0 + " " + 0, new Pawn(0, "pawn", this));
+			locations.put(0 + " " + 7, new Pawn(1, "pawn", this));
+		
+	}
+	
+	public void specialStateSpawnKingMakeUnblockedKill() {
+		locations.clear();
+		gameRound = 0;
+
+			locations.put(3 + " " + 2, new Pawn(0, "pawn", this));
+			locations.put(3 + " " + 5, new Pawn(1, "pawn", this));
+			locations.put(4 + " " + 2, new King(0, "king", this));
+			locations.put(4 + " " + 5, new King(1, "king", this));
+			locations.put(3 + " " + 4, new Queen(0, "queen", this));
+			locations.put(4 + " " + 6, new Queen(1, "queen", this));
+			locations.put(0 + " " + 0, new Pawn(0, "pawn", this));
+			locations.put(0 + " " + 6, new Pawn(1, "pawn", this));
+		
 	}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////// Setters/Getters /////////////////////////////////////////////////////////
@@ -205,8 +238,26 @@ public class BoardManager {
 	public boolean isThereCheck() {
 		return isThereCheck(locations);
 	}
-	public int getScorePosition(String kind) {
+	public int getScoreFromKind(String kind) {
 		return scoreMap.get(kind);
+	}
+	
+	// makes a sum of the pieces of a board thrown at it.
+	// it gives negative value to black and positive to white.
+	public int getScoreFromBoard(HashMap<String, Piece> locationsLocal) {
+		
+//		return locationsLocal.values().stream().mapToInt(piece -> (piece.getTeam() == 0? 1 : -1) * getScoreFromKind(piece.getKind())).sum();
+		
+		int total = 0;
+		for (Piece piece : locationsLocal.values()) {
+			if (piece.getTeam() == 0) {
+				total += getScoreFromKind(piece.getKind());
+			} else {
+				total += -1 * getScoreFromKind(piece.getKind());				
+			}
+		}
+		return total;
+	
 	}
 	
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
