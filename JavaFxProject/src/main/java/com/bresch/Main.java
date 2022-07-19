@@ -6,3 +6,4 @@ public class Main {
 	}
 }
 class MainJFXLauncher {public static void main(String[] args) {Main.main(args);}}
+// have no idea if this was what fixed debugging...
