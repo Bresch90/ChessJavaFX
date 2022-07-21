@@ -200,17 +200,21 @@ private static long time;
 			return new ArrayList<>();
 		return validMoves.get(locationString);
 	}
-	public HashMap<String, ArrayList<String>> getValidatedMoves(HashMap<String, Piece> locationsLocal, int teamsTurn){
+	public void getValidatedMoves(HashMap<String, Piece> locationsLocal, int teamsTurn, 
+			HashMap<String, ArrayList<String>> validatedMovesWhite, HashMap<String, ArrayList<String>> validatedMovesBlack){
 //System.out.println("tring to get team ["+teamsTurn+"] s validatedmoves from: \n" + locationsLocal.toString());
 		HashMap<String, ArrayList<String>> potentialMoves = getPotentialMovesAndUpdateKingsLocation(locationsLocal);
-		return validateMoves(potentialMoves, locationsLocal, teamsTurn);
+		validateMoves(potentialMoves, locationsLocal, teamsTurn, validatedMovesWhite, validatedMovesBlack);
 	}
 	public HashMap<String, ArrayList<String>> getValidatedMoves(){
 		return validMoves;
 	}
 	public void updateValidMoves(HashMap<String, ArrayList<String>> validatedMoves, int teamsTurn) {
 		validatedMoves.clear();
-		validatedMoves.putAll(validateMoves(getPotentialMovesAndUpdateKingsLocation(), teamsTurn));
+		HashMap<String, ArrayList<String>> validatedMovesWhite = new HashMap<>();
+		HashMap<String, ArrayList<String>> validatedMovesBlack = new HashMap<>();
+		validateMoves(getPotentialMovesAndUpdateKingsLocation(), locations, teamsTurn, validatedMovesWhite, validatedMovesBlack);
+		validatedMoves.putAll((teamsTurn == 0 ? validatedMovesWhite : validatedMovesBlack));
 		ArrayList<ArrayList<String>> validMovesValues = (ArrayList<ArrayList<String>>) validatedMoves.values().stream().filter(array -> !array.isEmpty()).collect(Collectors.toList());
 		if (validMovesValues.isEmpty()) {
 			ui.setCheckMate();
@@ -221,10 +225,9 @@ private static long time;
 		updateValidMoves(validMoves, whosTurn());
 	}
 	
-	public boolean isThereCheck(HashMap<String, Piece> locationsLocal) {
+	public boolean isThereCheck(HashMap<String, Piece> locationsLocal, int teamsTurn) {
 long timeStart = System.nanoTime();
 		HashMap<String, ArrayList<String>> newPotentialMoves = getPotentialMovesAndUpdateKingsLocation(locationsLocal);
-		int teamsTurn = whosTurn();
 		String kingLocation = (teamsTurn == 0 ? whiteKingLocation : blackKingLocation);
 		ArrayList<String> otherTeamLocationStrings = (ArrayList<String>) locationsLocal.keySet().stream()
 				.filter(locStr -> teamsTurn != locationsLocal.get(locStr).getTeam())
@@ -243,7 +246,7 @@ time += (timeEnd - timeStart);
 		return false;
 	}
 	public boolean isThereCheck() {
-		return isThereCheck(locations);
+		return isThereCheck(locations, whosTurn());
 	}
 	public int getScoreFromKind(String kind) {
 		return scoreMap.get(kind);
@@ -295,37 +298,52 @@ time += (timeEnd - timeStart);
 	}
 
 	// validates the moves,
-	// needs to be reworked. Checking through moves here to validate and also in minimax after each step.
-	private HashMap<String, ArrayList<String>> validateMoves(HashMap<String, ArrayList<String>> potentialMoves, HashMap<String, Piece> locationsLocal, int teamsTurn) {
-		HashMap<String, ArrayList<String>> validatedMoves = new HashMap<>();
-		ArrayList<String> currentTeamLocationStrings = (ArrayList<String>) locationsLocal.keySet().stream()
-				.filter(locStr -> teamsTurn == locationsLocal.get(locStr).getTeam())
-				.collect(Collectors.toList());
-		for (String locationString : currentTeamLocationStrings) {
-			ArrayList<String> validMoves = new ArrayList<>();
+	// needs to be reworked. Checking through moves here to validate no checks.
+	private void validateMoves(HashMap<String, ArrayList<String>> potentialMoves, HashMap<String, Piece> locationsLocal, int teamsTurn, 
+			HashMap<String, ArrayList<String>> validatedMovesWhite, HashMap<String, ArrayList<String>> validatedMovesBlack) {
+		
+		for (String locationString : locationsLocal.keySet()) {
+			ArrayList<String> validMovesLocWhite = new ArrayList<>();
+			ArrayList<String> validMovesLocBlack = new ArrayList<>();
 			try {
-			for (String move : potentialMoves.get(locationString)) {
-				HashMap<String, Piece> simulatedLocations = new HashMap<>();
-				simulatedLocations.putAll(locationsLocal);
-movePiece(move, locationString, simulatedLocations, true);
-				
-				if (isThereCheck(simulatedLocations)) {
-//System.out.println("there is check! from:[" + locationString + "]->["+move+"]");
-					continue;
+				int currentLocTeam = locationsLocal.get(locationString).getTeam();
+			// check friendly moves for checks (own king getting in check)
+				if (currentLocTeam == teamsTurn) {
+					for (String move : potentialMoves.get(locationString)) {
+						HashMap<String, Piece> simulatedLocations = new HashMap<>();
+						simulatedLocations.putAll(locationsLocal);
+		movePiece(move, locationString, simulatedLocations, true);
+						
+						if (isThereCheck(simulatedLocations, teamsTurn)) {
+		//System.out.println("there is check! from:[" + locationString + "]->["+move+"]");
+							continue;
+						}
+						if (teamsTurn == 0) {
+							validMovesLocWhite.add(move);
+						} else {
+							validMovesLocBlack.add(move);
+						}
+					}
+			// Don't check enemies moves for checks
+				} else {
+					if (teamsTurn != 0) {
+						validMovesLocWhite.addAll(potentialMoves.get(locationString));
+					} else {
+						validMovesLocBlack.addAll(potentialMoves.get(locationString));
+					}
 				}
-				validMoves.add(move);
-			}
+			
+				if (currentLocTeam == 0) {
+					validatedMovesWhite.put(locationString, validMovesLocWhite);
+				} else {
+					validatedMovesBlack.put(locationString, validMovesLocBlack);
+				}
 			} catch (Exception e){
 				e.printStackTrace();
 				System.out.println(potentialMoves.toString()+"\n" + locationString);
 				System.out.println(potentialMoves.get(locationString).toString());
 			}
-			validatedMoves.put(locationString, validMoves);
 		}
-		return validatedMoves;
-	}
-	private HashMap<String, ArrayList<String>> validateMoves(HashMap<String, ArrayList<String>> potentialMoves, int teamsTurn){
-		return validateMoves(potentialMoves, locations, teamsTurn);
 	}
 	
 }

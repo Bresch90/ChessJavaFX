@@ -41,15 +41,18 @@ counter = 0;
 								blackLocStrings.add(locStr);
 							}
 				});
-				HashMap<String, ArrayList<String>> validatedMoves = boardManager.getValidatedMoves(locations, team);
+				
+				HashMap<String, ArrayList<String>> validatedMovesWhite = new HashMap<>();
+				HashMap<String, ArrayList<String>> validatedMovesBlack = new HashMap<>();
+						boardManager.getValidatedMoves(locations, team, validatedMovesWhite, validatedMovesBlack);
 				
 			double whiteMoveScore = whiteLocStrings.stream().mapToDouble(locStr -> {
-				ArrayList<String> validMoveList = validatedMoves.get(locStr);
+				ArrayList<String> validMoveList = validatedMovesWhite.get(locStr);
 				if (validMoveList == null) return 0;
 				return validMoveList.size() * 0.1; 
 			}).sum();
 			double blackMoveScore = blackLocStrings.stream().mapToDouble(locStr -> {
-				ArrayList<String> validMoveList = validatedMoves.get(locStr);
+				ArrayList<String> validMoveList = validatedMovesBlack.get(locStr);
 				if (validMoveList == null) return 0;
 				return validMoveList.size() * -0.1; 
 			}).sum();
@@ -96,7 +99,9 @@ counter = 0;
 			
 //counter++;
 long timeStartValidateMoves = System.nanoTime();
-		HashMap<String, ArrayList<String>> validatedMoves = boardManager.getValidatedMoves(localLocations, teamsTurn);
+		HashMap<String, ArrayList<String>> validatedMovesWhite = new HashMap<>();
+		HashMap<String, ArrayList<String>> validatedMovesBlack = new HashMap<>();
+				boardManager.getValidatedMoves(localLocations, teamsTurn, validatedMovesWhite, validatedMovesBlack);
 // Is validatedMoves only supplying root teams turns moves? not local? also maybe supply all moves and filter here? to score easier.
 long timeEndValidateMoves = System.nanoTime();
 timeInValidatesMoveTotal += (timeEndValidateMoves - timeStartValidateMoves);
@@ -108,12 +113,12 @@ counter++;
 // return value of board sum with white pieces being positive and black negative.
 
 	double whiteMoveScore = whiteLocStrings.stream().mapToDouble(locStr -> {
-		ArrayList<String> validMoveList = validatedMoves.get(locStr);
+		ArrayList<String> validMoveList = validatedMovesWhite.get(locStr);
 		if (validMoveList == null) return 0;
 		return validMoveList.size() * 0.1; 
 	}).sum();
 	double blackMoveScore = blackLocStrings.stream().mapToDouble(locStr -> {
-		ArrayList<String> validMoveList = validatedMoves.get(locStr);
+		ArrayList<String> validMoveList = validatedMovesBlack.get(locStr);
 		if (validMoveList == null) return 0;
 		return validMoveList.size() * -0.1; 
 	}).sum();
@@ -130,7 +135,7 @@ counter++;
 			childScore = Integer.MIN_VALUE;
 			
 			for (String locStr : whiteLocStrings ) {
-				ArrayList<String> moveArray = validatedMoves.get(locStr);
+				ArrayList<String> moveArray = validatedMovesWhite.get(locStr);
 				if (moveArray == null || moveArray.isEmpty()) {
 					continue;
 				}
@@ -162,7 +167,7 @@ counter++;
 			childScore = Integer.MAX_VALUE;
 			
 			for (String locStr : blackLocStrings ) {
-				ArrayList<String> moveArray = validatedMoves.get(locStr);
+				ArrayList<String> moveArray = validatedMovesBlack.get(locStr);
 				if (moveArray == null || moveArray.isEmpty()) {
 					continue;
 				}

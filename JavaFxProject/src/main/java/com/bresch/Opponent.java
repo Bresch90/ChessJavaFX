@@ -18,7 +18,7 @@ private Random random;
 	public Opponent(BoardManager boardManager, Ui ui) {
 		this.boardManager = boardManager;
 		this.ui = ui;
-this.maxMoves = 5;
+this.maxMoves = 3;
 this.random = new Random();
 	}
 
