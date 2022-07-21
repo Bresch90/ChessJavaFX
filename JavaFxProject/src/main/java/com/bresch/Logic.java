@@ -82,11 +82,11 @@ public class Logic {
         Thread opponentThread = new Thread(new Runnable() {
 			@Override
 			public void run(){
-				// only for running continuously, aka computer against itself
-				for (int i = 0; i < 1001; i++) {
-		System.out.println("Pausing until enter");
-		userInput.nextLine();
-		System.out.println("Calculating");
+				// only for running continuously, aka computer against itself else 1 loop
+				for (int i = 0; i < 1; i++) {
+//		System.out.println("Pausing until enter");
+//		userInput.nextLine();
+//		System.out.println("Calculating");
 					CountDownLatch latch = new CountDownLatch(1);
 					if (opponentActive && boardManager.whosTurn() < 2) {
 				        try {
@@ -98,6 +98,10 @@ public class Logic {
 				    		Button draggingButton = ui.getButton(decisions.get(0));
 				    		Button targetButton = ui.getButton(decisions.get(1));
 System.out.println("Number of moves calculated ["+decisions.get(2)+"]");
+//long timeInMoveGenerationOfPiece = boardManager.getLocations().get("2 1").getTime();
+//System.out.println("Total time in move of Piece [" + timeInMoveGenerationOfPiece/1000000 + "]");
+long timeInBoardManagerIsThereCheck = boardManager.getTime();
+System.out.println("Total time in isThereCheck  [" + timeInBoardManagerIsThereCheck/1000000 + "]");
 				    		Platform.runLater(new Runnable(){
 				    			// move piece for real in main thread
 				    			@Override

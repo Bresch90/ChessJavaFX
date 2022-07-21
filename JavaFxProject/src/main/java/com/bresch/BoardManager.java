@@ -13,13 +13,13 @@ import java.util.stream.Collectors;
 //TODO save board?
 
 public class BoardManager {
+private static long time;
 	private HashMap<String, Piece> locations;
 	private HashMap<String, ArrayList<String>> validMoves;
 	private String whiteKingLocation;
 	private String blackKingLocation;
 	private Ui ui;
 	private int gameRound;
-	private int checkedForChecksNumber;
 	private HashMap<String, Integer> scoreMap;
 
 	public BoardManager(Ui ui) {
@@ -27,7 +27,6 @@ public class BoardManager {
 		this.locations = new HashMap<>();
 		this.validMoves = new HashMap<>();
 		this.gameRound = 0;
-		this.checkedForChecksNumber = 1;
 		this.scoreMap = new HashMap<>(Map.of("pawn", 1, "rook", 5, "knight", 3, "bishop", 3, "queen",
 				9, "king", 90));
 	}
@@ -166,6 +165,9 @@ public class BoardManager {
 	public String getkings() {
 		return "["+ whiteKingLocation + "] [" + blackKingLocation + "]";
 	}
+	public long getTime() {
+		return time;
+	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////// public utility /////////////////////////////////////////////////////////////////////////////////////////
@@ -200,7 +202,8 @@ public class BoardManager {
 	}
 	public HashMap<String, ArrayList<String>> getValidatedMoves(HashMap<String, Piece> locationsLocal, int teamsTurn){
 //System.out.println("tring to get team ["+teamsTurn+"] s validatedmoves from: \n" + locationsLocal.toString());
-		return validateMoves(getPotentialMovesAndUpdateKingsLocation(locationsLocal), locationsLocal, teamsTurn);
+		HashMap<String, ArrayList<String>> potentialMoves = getPotentialMovesAndUpdateKingsLocation(locationsLocal);
+		return validateMoves(potentialMoves, locationsLocal, teamsTurn);
 	}
 	public HashMap<String, ArrayList<String>> getValidatedMoves(){
 		return validMoves;
@@ -219,6 +222,7 @@ public class BoardManager {
 	}
 	
 	public boolean isThereCheck(HashMap<String, Piece> locationsLocal) {
+long timeStart = System.nanoTime();
 		HashMap<String, ArrayList<String>> newPotentialMoves = getPotentialMovesAndUpdateKingsLocation(locationsLocal);
 		int teamsTurn = whosTurn();
 		String kingLocation = (teamsTurn == 0 ? whiteKingLocation : blackKingLocation);
@@ -227,12 +231,15 @@ public class BoardManager {
 				.collect(Collectors.toList());
 		for (String locationString : otherTeamLocationStrings) {
 			for (String moveString : newPotentialMoves.get(locationString)) {
-				checkedForChecksNumber++;
 				if (!isFriendly(kingLocation, locationString, locationsLocal) && (moveString.equals(kingLocation))) {
+long timeEnd = System.nanoTime();
+time += (timeEnd - timeStart);
 					return true;
 				}
 			}
 		}
+long timeEnd = System.nanoTime();
+time += (timeEnd - timeStart);
 		return false;
 	}
 	public boolean isThereCheck() {
@@ -244,7 +251,7 @@ public class BoardManager {
 	
 	// makes a sum of the pieces of a board thrown at it.
 	// it gives negative value to black and positive to white.
-	public int getScoreFromBoard(HashMap<String, Piece> locationsLocal) {
+	public double getScoreFromBoard(HashMap<String, Piece> locationsLocal, double moveScoreTotal) {
 		
 //		return locationsLocal.values().stream().mapToInt(piece -> (piece.getTeam() == 0? 1 : -1) * getScoreFromKind(piece.getKind())).sum();
 		
@@ -256,7 +263,7 @@ public class BoardManager {
 				total += -1 * getScoreFromKind(piece.getKind());				
 			}
 		}
-		return total;
+		return total + moveScoreTotal;
 	
 	}
 	
@@ -275,8 +282,10 @@ public class BoardManager {
 					blackKingLocation = locationString;
 				}
 			}
+
 			ArrayList<String> moves = piece.moves(locationString, locationsLocal);
 			potentialMoves.put(locationString, moves);
+			
 		}
 		return potentialMoves;
 	}
@@ -298,8 +307,7 @@ public class BoardManager {
 			for (String move : potentialMoves.get(locationString)) {
 				HashMap<String, Piece> simulatedLocations = new HashMap<>();
 				simulatedLocations.putAll(locationsLocal);
-checkedForChecksNumber = 1;
-				movePiece(move, locationString, simulatedLocations, true);
+movePiece(move, locationString, simulatedLocations, true);
 				
 				if (isThereCheck(simulatedLocations)) {
 //System.out.println("there is check! from:[" + locationString + "]->["+move+"]");

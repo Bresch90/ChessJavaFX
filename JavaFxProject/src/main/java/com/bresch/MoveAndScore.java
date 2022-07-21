@@ -12,7 +12,7 @@ static long timeInValidatesMoveTotal = 0;
 	private int team;
 	private String moveFrom;
 	private String moveTo;
-	private int score;
+	private double score;
 	private int maxMoves;
 //////IF TEAM == 0 THEN ITS WHITE!
 	
@@ -29,15 +29,39 @@ counter = 0;
 		// simulate the move and add point if any
 		this.maxMoves = maxMoves -1;
 		boardManager.movePiece(moveTo, moveFrom, locations, true);
-		updateScore(boardManager.getScoreFromBoard(locations));
+		
+		
+		// setup, sorting enemy/friendly to get score from moves
+				ArrayList<String> whiteLocStrings = new ArrayList<>();
+				ArrayList<String> blackLocStrings = new ArrayList<>();
+					locations.keySet().stream().forEach(locStr -> {
+							if (locations.get(locStr).getTeam() == 0) {
+								whiteLocStrings.add(locStr);
+							} else {
+								blackLocStrings.add(locStr);
+							}
+				});
+				HashMap<String, ArrayList<String>> validatedMoves = boardManager.getValidatedMoves(locations, team);
+				
+			double whiteMoveScore = whiteLocStrings.stream().mapToDouble(locStr -> {
+				ArrayList<String> validMoveList = validatedMoves.get(locStr);
+				if (validMoveList == null) return 0;
+				return validMoveList.size() * 0.1; 
+			}).sum();
+			double blackMoveScore = blackLocStrings.stream().mapToDouble(locStr -> {
+				ArrayList<String> validMoveList = validatedMoves.get(locStr);
+				if (validMoveList == null) return 0;
+				return validMoveList.size() * -0.1; 
+			}).sum();
+		updateScore(boardManager.getScoreFromBoard(locations, whiteMoveScore + blackMoveScore));
 	}
 	public ArrayList<String> getDecision(){
 		return new ArrayList<>(Arrays.asList(moveFrom, moveTo, String.valueOf(counter)));
 	}
-	public int getScore() {
+	public double getScore() {
 		return score;
 	}
-	public void updateScore(int valueToAdd) {
+	public void updateScore(double valueToAdd) {
 		score += valueToAdd;
 	}
 	@Override
@@ -53,21 +77,10 @@ counter = 0;
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	// simulate ALL the enemy's moves and calculate points for that. Start there.
-	public int calculateScore(HashMap<String, Piece> originalLocations, int maxMovesLocal, int teamsTurn, int alpha, int beta) {
+	public double calculateScore(HashMap<String, Piece> originalLocations, int maxMovesLocal, int teamsTurn, double alpha, double beta) {
 		HashMap<String, Piece> localLocations = new HashMap<>();
 	// create new clone locations
 		localLocations.putAll(originalLocations);
-		if (localLocations.values().contains(null)) {
-System.out.println("when is here beeing null??\n" + localLocations.toString());
-		}
-
-		// EXIT CASE
-		if (maxMovesLocal < 1) {
-counter++;
-//System.out.println("counter is now = ["+counter+"]");
-	// return value of board sum with white pieces being positive and black negative.
-			return boardManager.getScoreFromBoard(localLocations);
-		}
 
 	// setup, sorting enemy/friendly
 		ArrayList<String> whiteLocStrings = new ArrayList<>();
@@ -81,14 +94,36 @@ counter++;
 					}
 		});
 			
-
+//counter++;
 long timeStartValidateMoves = System.nanoTime();
 		HashMap<String, ArrayList<String>> validatedMoves = boardManager.getValidatedMoves(localLocations, teamsTurn);
+// Is validatedMoves only supplying root teams turns moves? not local? also maybe supply all moves and filter here? to score easier.
 long timeEndValidateMoves = System.nanoTime();
 timeInValidatesMoveTotal += (timeEndValidateMoves - timeStartValidateMoves);
 
+// EXIT CASE
+if (maxMovesLocal < 1) {
+counter++;
+//System.out.println("counter is now = ["+counter+"]");
+// return value of board sum with white pieces being positive and black negative.
+
+	double whiteMoveScore = whiteLocStrings.stream().mapToDouble(locStr -> {
+		ArrayList<String> validMoveList = validatedMoves.get(locStr);
+		if (validMoveList == null) return 0;
+		return validMoveList.size() * 0.1; 
+	}).sum();
+	double blackMoveScore = blackLocStrings.stream().mapToDouble(locStr -> {
+		ArrayList<String> validMoveList = validatedMoves.get(locStr);
+		if (validMoveList == null) return 0;
+		return validMoveList.size() * -0.1; 
+	}).sum();
+	
+	return boardManager.getScoreFromBoard(localLocations, whiteMoveScore + blackMoveScore);
+}
+
 ///////////////////// minimax with alpha beta pruning
-		int childScore = 0;
+// Maybe also add counting nodes to get number of moves a player can make to add to score?/////////////////
+		double childScore = 0;
 		if (teamsTurn == 0) {
 		// Maximizing player (white)
 		// Main driver loop for new children 

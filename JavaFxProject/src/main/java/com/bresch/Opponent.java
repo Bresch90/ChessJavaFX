@@ -18,7 +18,7 @@ private Random random;
 	public Opponent(BoardManager boardManager, Ui ui) {
 		this.boardManager = boardManager;
 		this.ui = ui;
-this.maxMoves = 4;
+this.maxMoves = 5;
 this.random = new Random();
 	}
 
@@ -58,30 +58,34 @@ this.random = new Random();
 
 //// To run in single thread for debug
 long timeStart = System.nanoTime();
-		for (MoveAndScore moveObject : movesBeeingEvaluated) {
-			moveObject.calculateScore();
-			moveLatch.countDown();
-		}
-long timeEnd = System.nanoTime();
+//		for (MoveAndScore moveObject : movesBeeingEvaluated) {
+//			moveObject.calculateScore();
+//			moveLatch.countDown();
+//		}
+
 
 //// To run in multi thread for performance		
 		
-//		movesBeeingEvaluated.stream().forEach(moveObject -> {
-//			Thread thread = new Thread(new Runnable() {
-//				
-//				@Override
-//				public void run() {
-//					moveObject.calculateScore();
-//					moveLatch.countDown();
-////System.out.println(moveObject);
-//				}
-//			});
-//			thread.setDaemon(true);
-//			thread.start();
-//			
-//		});
+		movesBeeingEvaluated.stream().forEach(moveObject -> {
+			Thread thread = new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					moveObject.calculateScore();
+					moveLatch.countDown();
+//System.out.println(moveObject);
+				}
+			});
+			thread.setDaemon(true);
+			thread.start();
+			
+		});
 		moveLatch.await(60, TimeUnit.SECONDS);
 		moveLatch.await();
+long timeEnd = System.nanoTime();
+		if (movesBeeingEvaluated.isEmpty()) {
+			return decisions;
+		}
 		
 long timeInValidateMovesTotal = movesBeeingEvaluated.get(0).getTimeValidateMoves();
 long timeInMoveTotalTotal = (timeEnd - timeStart);
@@ -91,7 +95,7 @@ System.out.println("Time inside ValidateMoves:["+ timeInValidateMovesTotal/10000
 System.out.println("Time inside ValidateMoves:[2652ms] before optimization for first black with [62398] number of moves.");
 		// next, biggest score is decision or random of biggest. if maximizing
 		if (teamsTurn == 0) {
-			int maxScore = movesBeeingEvaluated.stream().mapToInt(MoveAndScore::getScore).max().orElse(Integer.MIN_VALUE);	
+			double maxScore = movesBeeingEvaluated.stream().mapToDouble(MoveAndScore::getScore).max().orElse(Integer.MIN_VALUE);	
 			ArrayList<MoveAndScore> movesFiltered = (ArrayList<MoveAndScore>) movesBeeingEvaluated.stream().filter(object -> object.getScore() == maxScore).collect(Collectors.toList());
 	//System.out.println(movesFiltered.stream().count() + "; " + movesBeeingEvaluated.toString());
 	//Diagnostics////////////
@@ -110,7 +114,7 @@ System.out.println("Time inside ValidateMoves:[2652ms] before optimization for f
 	//return makeRandom(decisions, friendlyLocStrings, validatedMoves);
 		} else {
 	// If minimizing player (Black)
-			int minScore = movesBeeingEvaluated.stream().mapToInt(MoveAndScore::getScore).min().orElse(Integer.MAX_VALUE);	
+			double minScore = movesBeeingEvaluated.stream().mapToDouble(MoveAndScore::getScore).min().orElse(Integer.MAX_VALUE);	
 			ArrayList<MoveAndScore> movesFiltered = (ArrayList<MoveAndScore>) movesBeeingEvaluated.stream().filter(object -> object.getScore() == minScore).collect(Collectors.toList());
 	//System.out.println(movesFiltered.stream().count() + "; " + movesBeeingEvaluated.toString());
 	//Diagnostics////////////

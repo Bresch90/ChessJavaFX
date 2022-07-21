@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public abstract class Piece {
-	
+private static long time;
 	private BoardManager boardManager;
 	private int team;
 	private String kind;
@@ -56,16 +56,22 @@ public abstract class Piece {
 	public void setFirstMove() {
 		firstMove = false;
 	}
+	public long getTime() {
+		return time;
+	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////// Moves //////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public ArrayList<String> movesPiece(String locationString, ArrayList<int[]> moveDirections, int maxRange, HashMap<String, Piece> locationsLocal) {
+Long timeStart = System.nanoTime();
 		int[] loc = BoardManager.locationStringToArray(locationString);
 		ArrayList<String> potentialMoves = new ArrayList<>();
 		for (int[] moveDirection : moveDirections) {
 			moveRecursion(locationString, loc[0], loc[1], moveDirection, maxRange, potentialMoves, locationsLocal);
 		}
+Long timeEnd = System.nanoTime();
+time += (timeEnd-timeStart);
 		return potentialMoves;
 	}
 	private void moveRecursion(String locationString, int x, int y, int[] moveDirection, int maxRange, ArrayList<String> potentialMoves, HashMap<String, Piece> locationsLocal) {
