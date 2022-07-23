@@ -4,8 +4,10 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -21,6 +23,8 @@ private static long time;
 	private Ui ui;
 	private int gameRound;
 	private HashMap<String, Integer> scoreMap;
+	private long timeInGetPotentialMoves;
+
 
 	public BoardManager(Ui ui) {
 		this.ui = ui;
@@ -168,6 +172,12 @@ private static long time;
 	public long getTime() {
 		return time;
 	}
+	public long getTimeInGetPotentialMovesTotal() {
+		return timeInGetPotentialMoves;
+	}
+	public long getTimeInPieceMove() {
+		return locations.get("4 7").getTime();
+	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////// public utility /////////////////////////////////////////////////////////////////////////////////////////
@@ -203,8 +213,16 @@ private static long time;
 	public void getValidatedMoves(HashMap<String, Piece> locationsLocal, int teamsTurn, 
 			HashMap<String, ArrayList<String>> validatedMovesWhite, HashMap<String, ArrayList<String>> validatedMovesBlack){
 //System.out.println("tring to get team ["+teamsTurn+"] s validatedmoves from: \n" + locationsLocal.toString());
-		HashMap<String, ArrayList<String>> potentialMoves = getPotentialMovesAndUpdateKingsLocation(locationsLocal);
-		validateMoves(potentialMoves, locationsLocal, teamsTurn, validatedMovesWhite, validatedMovesBlack);
+		HashMap<String, ArrayList<String>> potentialMovesWhite = new HashMap<>();
+		HashMap<String, ArrayList<String>> potentialMovesBlack = new HashMap<>();
+		
+		ArrayList<Integer> checked = new ArrayList<>(List.of(0,0,0));
+		// (0, 1) turn on that this is from isThereCheck and should log checks and only get enemies moves
+		// (1, 0) reset seen checks to 0, false
+		// (2, teamsTurn) set who's move it is. ignored if (0,0)
+		
+		getPotentialMovesAndUpdateKingsLocation(potentialMovesWhite, potentialMovesBlack, locationsLocal, checked);
+		validateMoves(potentialMovesWhite, potentialMovesBlack, locationsLocal, teamsTurn, validatedMovesWhite, validatedMovesBlack);
 	}
 	public HashMap<String, ArrayList<String>> getValidatedMoves(){
 		return validMoves;
@@ -213,7 +231,17 @@ private static long time;
 		validatedMoves.clear();
 		HashMap<String, ArrayList<String>> validatedMovesWhite = new HashMap<>();
 		HashMap<String, ArrayList<String>> validatedMovesBlack = new HashMap<>();
-		validateMoves(getPotentialMovesAndUpdateKingsLocation(), locations, teamsTurn, validatedMovesWhite, validatedMovesBlack);
+		HashMap<String, ArrayList<String>> potentialMovesWhite = new HashMap<>();
+		HashMap<String, ArrayList<String>> potentialMovesBlack = new HashMap<>();
+		
+		ArrayList<Integer> checked = new ArrayList<>(List.of(0,0,0));
+		// (0, 1) turn on that this is from isThereCheck and should log checks and only get enemies moves
+		// (1, 0) reset seen checks to 0, false
+		// (2, teamsTurn) set who's move it is. ignored if (0,0)
+		
+		getPotentialMovesAndUpdateKingsLocation(potentialMovesWhite, potentialMovesBlack, locations, checked);
+		
+		validateMoves(potentialMovesWhite, potentialMovesBlack, locations, teamsTurn, validatedMovesWhite, validatedMovesBlack);
 		validatedMoves.putAll((teamsTurn == 0 ? validatedMovesWhite : validatedMovesBlack));
 		ArrayList<ArrayList<String>> validMovesValues = (ArrayList<ArrayList<String>>) validatedMoves.values().stream().filter(array -> !array.isEmpty()).collect(Collectors.toList());
 		if (validMovesValues.isEmpty()) {
@@ -227,23 +255,55 @@ private static long time;
 	
 	public boolean isThereCheck(HashMap<String, Piece> locationsLocal, int teamsTurn) {
 long timeStart = System.nanoTime();
-		HashMap<String, ArrayList<String>> newPotentialMoves = getPotentialMovesAndUpdateKingsLocation(locationsLocal);
-		String kingLocation = (teamsTurn == 0 ? whiteKingLocation : blackKingLocation);
-		ArrayList<String> otherTeamLocationStrings = (ArrayList<String>) locationsLocal.keySet().stream()
-				.filter(locStr -> teamsTurn != locationsLocal.get(locStr).getTeam())
-				.collect(Collectors.toList());
-		for (String locationString : otherTeamLocationStrings) {
-			for (String moveString : newPotentialMoves.get(locationString)) {
-				if (!isFriendly(kingLocation, locationString, locationsLocal) && (moveString.equals(kingLocation))) {
-long timeEnd = System.nanoTime();
-time += (timeEnd - timeStart);
-					return true;
-				}
-			}
+		HashMap<String, ArrayList<String>> potentialMovesWhite = new HashMap<>();
+		HashMap<String, ArrayList<String>> potentialMovesBlack = new HashMap<>();
+// (0, 1) turn on that this is from isThereCheck and should log checks and only get enemies moves
+// (1, 0)reset seen checks to 0, false
+// (2, teamsTurn) set who's move it is
+		ArrayList<Integer> checked = new ArrayList<>(List.of(1,0,teamsTurn));
+	    getPotentialMovesAndUpdateKingsLocation(potentialMovesWhite, potentialMovesBlack, locationsLocal, checked);
+		if (checked.get(1) == 1) {
+//			System.out.println("Omg there was check in: " + (teamsTurn == 0 ? potentialMovesWhite.toString() : potentialMovesBlack.toString()));
+			long timeEnd = System.nanoTime();
+			time += (timeEnd - timeStart);
+			return true;
+		} else {
+			long timeEnd = System.nanoTime();
+			time += (timeEnd - timeStart);
+			return false;
 		}
-long timeEnd = System.nanoTime();
-time += (timeEnd - timeStart);
-		return false;
+//		ArrayList<String> otherTeamLocationStrings = (ArrayList<String>) locationsLocal.keySet().stream()
+//				.filter(locStr -> teamsTurn != locationsLocal.get(locStr).getTeam())
+//				.collect(Collectors.toList());
+		
+//		if (teamsTurn != 0) {
+//	// change HashMap<String, ArrayList<String>> to HashMap<String, HashMap<String>> for faster search, benchmark this
+//			
+//			int test = potentialMovesWhite.values().stream().mapToInt(arr -> (arr.contains(kingLocation) ? 1 : 0)).sum();
+//			System.out.println("test if contains king = [" + test + "]" );
+//			if (potentialMovesWhite.values().contains(kingLocation)) {
+//long timeEnd = System.nanoTime();
+//time += (timeEnd - timeStart);
+//				return true;
+//			}
+//		} else {
+//			if (potentialMovesBlack.values().contains(kingLocation)) {
+//long timeEnd = System.nanoTime();
+//time += (timeEnd - timeStart);
+//				return true;
+//			}
+//		}
+		
+//		for (String locationString : otherTeamLocationStrings) {
+//			for (String moveString : newPotentialMoves.get(locationString)) {
+//				if (!isFriendly(kingLocation, locationString, locationsLocal) && (moveString.equals(kingLocation))) {
+//					return true;
+//				}
+//			}
+//		}
+//long timeEnd = System.nanoTime();
+//time += (timeEnd - timeStart);
+//		return false;
 	}
 	public boolean isThereCheck() {
 		return isThereCheck(locations, whosTurn());
@@ -273,75 +333,96 @@ time += (timeEnd - timeStart);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////// private utility ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	private HashMap<String, ArrayList<String>> getPotentialMovesAndUpdateKingsLocation(HashMap<String, Piece> locationsLocal) {
-		HashMap<String, ArrayList<String>> potentialMoves = new HashMap<>();
+	private void getPotentialMovesAndUpdateKingsLocation(HashMap<String, ArrayList<String>> potentialMovesWhite,
+			HashMap<String, ArrayList<String>> potentialMovesBlack, HashMap<String, Piece> locationsLocal, ArrayList<Integer> checked) {
+long timeStart = System.nanoTime();
+	// when checked.get(0) == 1 it checks in piece.moves() if the target of an attack is the king. Then that moveseries is checking the other player.
 		//update king locations and ask the piece how it can potentially move
 		for (String locationString : locationsLocal.keySet()) {
 			Piece piece = locationsLocal.get(locationString);
-			if (piece.getKind().equals("king")) {
-				if (piece.getTeam() == 0) {
+			int teamOfPiece = piece.getTeam();
+			if (teamOfPiece == 0) {
+				if (piece.getKind().equals("king")) {
 					whiteKingLocation = locationString;
 				} else {
 					blackKingLocation = locationString;
 				}
 			}
-
-			ArrayList<String> moves = piece.moves(locationString, locationsLocal);
-			potentialMoves.put(locationString, moves);
+// special part in function if its from isThereCheck function?
+			
+// get checked info from moves? pass with boolean value?
+	// if checked.get(0) == 0 add all moves. Otherwise only add enemies moves. aka when checking if checked only enemies is needed.
+			if (checked.get(0) == 0) { 
+				
+				ArrayList<String> moves = piece.moves(locationString, locationsLocal, checked);
+				if (teamOfPiece == 0) {
+					potentialMovesWhite.put(locationString, moves);
+				} else {
+					potentialMovesBlack.put(locationString, moves);
+				}
+			} else if (checked.get(2) != teamOfPiece) {
+			// only add enemies moves in potetialMoves
+				ArrayList<String> moves = piece.moves(locationString, locationsLocal, checked);
+				if (teamOfPiece == 0) {
+					potentialMovesWhite.put(locationString, moves);
+				} else {
+					potentialMovesBlack.put(locationString, moves);
+				}
+			}
 			
 		}
-		return potentialMoves;
+long timeEnd = System.nanoTime();
+timeInGetPotentialMoves = timeEnd - timeStart;
 	}
 	
-	private HashMap<String, ArrayList<String>> getPotentialMovesAndUpdateKingsLocation() {
-		return getPotentialMovesAndUpdateKingsLocation(locations);
-	}
-
 	// validates the moves,
 	// needs to be reworked. Checking through moves here to validate no checks.
-	private void validateMoves(HashMap<String, ArrayList<String>> potentialMoves, HashMap<String, Piece> locationsLocal, int teamsTurn, 
-			HashMap<String, ArrayList<String>> validatedMovesWhite, HashMap<String, ArrayList<String>> validatedMovesBlack) {
+	private void validateMoves(HashMap<String, ArrayList<String>> potentialMovesWhite, HashMap<String, ArrayList<String>> potentialMovesBlack, 
+			HashMap<String, Piece> locationsLocal, int teamsTurn, HashMap<String, ArrayList<String>> validatedMovesWhite, HashMap<String, ArrayList<String>> validatedMovesBlack) {
 		
 		for (String locationString : locationsLocal.keySet()) {
 			ArrayList<String> validMovesLocWhite = new ArrayList<>();
 			ArrayList<String> validMovesLocBlack = new ArrayList<>();
-			try {
-				int currentLocTeam = locationsLocal.get(locationString).getTeam();
-			// check friendly moves for checks (own king getting in check)
-				if (currentLocTeam == teamsTurn) {
-					for (String move : potentialMoves.get(locationString)) {
-						HashMap<String, Piece> simulatedLocations = new HashMap<>();
-						simulatedLocations.putAll(locationsLocal);
-		movePiece(move, locationString, simulatedLocations, true);
-						
-						if (isThereCheck(simulatedLocations, teamsTurn)) {
-		//System.out.println("there is check! from:[" + locationString + "]->["+move+"]");
-							continue;
-						}
-						if (teamsTurn == 0) {
-							validMovesLocWhite.add(move);
-						} else {
-							validMovesLocBlack.add(move);
-						}
+			int currentLocTeam = locationsLocal.get(locationString).getTeam();
+		// check friendly moves for checks (own king getting in check)
+			if (currentLocTeam == 0) {
+				if (potentialMovesWhite.get(locationString) == null) {
+					continue;
+				}
+			} else {
+				if (potentialMovesBlack.get(locationString) == null) {
+					continue;
+				}
+			}
+			if (currentLocTeam == teamsTurn) {
+				for (String moveStr : (currentLocTeam == 0 ? potentialMovesWhite.get(locationString) : potentialMovesBlack.get(locationString))) {
+					HashMap<String, Piece> simulatedLocations = new HashMap<>();
+					simulatedLocations.putAll(locationsLocal);
+					movePiece(moveStr, locationString, simulatedLocations, true);
+					
+					if (isThereCheck(simulatedLocations, teamsTurn)) {
+	//System.out.println("there is check! from:[" + locationString + "]->["+move+"]");
+						continue;
 					}
-			// Don't check enemies moves for checks
-				} else {
-					if (teamsTurn != 0) {
-						validMovesLocWhite.addAll(potentialMoves.get(locationString));
+					if (currentLocTeam == 0) {
+						validMovesLocWhite.add(moveStr);
 					} else {
-						validMovesLocBlack.addAll(potentialMoves.get(locationString));
+						validMovesLocBlack.add(moveStr);
 					}
 				}
-			
+		// Don't check enemies moves for checks
+			} else {
 				if (currentLocTeam == 0) {
-					validatedMovesWhite.put(locationString, validMovesLocWhite);
+					validMovesLocWhite.addAll(potentialMovesWhite.get(locationString));
 				} else {
-					validatedMovesBlack.put(locationString, validMovesLocBlack);
+					validMovesLocBlack.addAll(potentialMovesBlack.get(locationString));
 				}
-			} catch (Exception e){
-				e.printStackTrace();
-				System.out.println(potentialMoves.toString()+"\n" + locationString);
-				System.out.println(potentialMoves.get(locationString).toString());
+			}
+		// Wjat am i doing here??
+			if (currentLocTeam == 0) {
+				validatedMovesWhite.put(locationString, validMovesLocWhite);
+			} else {
+				validatedMovesBlack.put(locationString, validMovesLocBlack);
 			}
 		}
 	}

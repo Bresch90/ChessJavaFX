@@ -18,7 +18,7 @@ private Random random;
 	public Opponent(BoardManager boardManager, Ui ui) {
 		this.boardManager = boardManager;
 		this.ui = ui;
-this.maxMoves = 3;
+this.maxMoves = 4;
 this.random = new Random();
 	}
 
@@ -58,6 +58,7 @@ this.random = new Random();
 
 //// To run in single thread for debug
 long timeStart = System.nanoTime();
+
 //		for (MoveAndScore moveObject : movesBeeingEvaluated) {
 //			moveObject.calculateScore();
 //			moveLatch.countDown();
@@ -80,7 +81,7 @@ long timeStart = System.nanoTime();
 			thread.start();
 			
 		});
-		moveLatch.await(60, TimeUnit.SECONDS);
+//		moveLatch.await(60, TimeUnit.SECONDS);
 		moveLatch.await();
 long timeEnd = System.nanoTime();
 		if (movesBeeingEvaluated.isEmpty()) {
@@ -94,6 +95,7 @@ System.out.println("Time inside MoveAndScore without ValidateMoves:["+ (timeInMo
 System.out.println("Time inside ValidateMoves:["+ timeInValidateMovesTotal/1000000+ "ms]");
 System.out.println("Time inside ValidateMoves:[2652ms] before optimization for first black with [62398] number of moves.");
 		// next, biggest score is decision or random of biggest. if maximizing
+
 		if (teamsTurn == 0) {
 			double maxScore = movesBeeingEvaluated.stream().mapToDouble(MoveAndScore::getScore).max().orElse(Integer.MIN_VALUE);	
 			ArrayList<MoveAndScore> movesFiltered = (ArrayList<MoveAndScore>) movesBeeingEvaluated.stream().filter(object -> object.getScore() == maxScore).collect(Collectors.toList());

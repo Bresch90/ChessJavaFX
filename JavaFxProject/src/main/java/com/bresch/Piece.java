@@ -4,7 +4,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public abstract class Piece {
-private static long time;
+protected static long time;
+private static long timeInPieceGetMoves;
 	private BoardManager boardManager;
 	private int team;
 	private String kind;
@@ -63,18 +64,18 @@ private static long time;
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////// Moves //////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	public ArrayList<String> movesPiece(String locationString, ArrayList<int[]> moveDirections, int maxRange, HashMap<String, Piece> locationsLocal) {
+	public ArrayList<String> movesPiece(String locationString, ArrayList<int[]> moveDirections, int maxRange, HashMap<String, Piece> locationsLocal, ArrayList<Integer> checked) {
 Long timeStart = System.nanoTime();
 		int[] loc = BoardManager.locationStringToArray(locationString);
 		ArrayList<String> potentialMoves = new ArrayList<>();
 		for (int[] moveDirection : moveDirections) {
-			moveRecursion(locationString, loc[0], loc[1], moveDirection, maxRange, potentialMoves, locationsLocal);
+			moveRecursion(locationString, loc[0], loc[1], moveDirection, maxRange, potentialMoves, locationsLocal, checked);
 		}
 Long timeEnd = System.nanoTime();
-time += (timeEnd-timeStart);
+//time += (timeEnd-timeStart);
 		return potentialMoves;
 	}
-	private void moveRecursion(String locationString, int x, int y, int[] moveDirection, int maxRange, ArrayList<String> potentialMoves, HashMap<String, Piece> locationsLocal) {
+	private void moveRecursion(String locationString, int x, int y, int[] moveDirection, int maxRange, ArrayList<String> potentialMoves, HashMap<String, Piece> locationsLocal, ArrayList<Integer> checked) {
 		x += moveDirection[0];
 		y += moveDirection[1];
 		if (maxRange == 0 || x < 0 || x > 7 || y < 0 || y > 7)
@@ -85,10 +86,17 @@ time += (timeEnd-timeStart);
 		if (boardManager.isPieceAtLocation(moveString, locationsLocal)) {
 			if (boardManager.isFriendly(locationString, moveString, locationsLocal))
 				return;
+// if this is true there is check. Do something with this info!
+// boolean won't work?
+// this wont work. Have to check if the Unfriendly piece is KING!!! ///////////////////////////////////////////////////////////////////////
+			if (checked.get(0) == 1 && locationsLocal.get(moveString).kind.equals("king")) {
+				checked.set(1, 1);
+			}
+			
 			maxRange = 1;
 		}
 		potentialMoves.add(moveString);
-		moveRecursion(locationString, x, y, moveDirection, maxRange - 1, potentialMoves, locationsLocal);
+		moveRecursion(locationString, x, y, moveDirection, maxRange - 1, potentialMoves, locationsLocal, checked);
 	}
 	public void moveSides(ArrayList<int[]> moveDirections) {
 		moveDirections.addAll(
@@ -99,5 +107,5 @@ time += (timeEnd-timeStart);
 				Arrays.asList(new int[] { 1, 1 }, new int[] { 1, -1 }, new int[] { -1, -1 }, new int[] { -1, 1 }));
 	}
 
-	public abstract ArrayList<String> moves(String locationString, HashMap<String, Piece> locationsLocal);
+	public abstract ArrayList<String> moves(String locationString, HashMap<String, Piece> locationsLocal, ArrayList<Integer> checked);
 }

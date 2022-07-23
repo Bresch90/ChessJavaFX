@@ -101,7 +101,12 @@ System.out.println("Number of moves calculated ["+decisions.get(2)+"]");
 //long timeInMoveGenerationOfPiece = boardManager.getLocations().get("2 1").getTime();
 //System.out.println("Total time in move of Piece [" + timeInMoveGenerationOfPiece/1000000 + "]");
 long timeInBoardManagerIsThereCheck = boardManager.getTime();
-System.out.println("Total time in isThereCheck  [" + timeInBoardManagerIsThereCheck/1000000 + "]");
+System.out.println("Total time in isThereCheck  [" + timeInBoardManagerIsThereCheck/1000000 + "ms]");
+long timeInBoardManagerGetPotentialMovesTotal = boardManager.getTime();
+System.out.println("Total time in getPotentialMovesTotal  [" + timeInBoardManagerGetPotentialMovesTotal/1000000 + "ms]");
+long timeInPieceMoveRecursion = Piece.time;
+System.out.println("Total time in timeInPieceMoveRecursion  [" + timeInPieceMoveRecursion/1000000 + "ms]");
+
 				    		Platform.runLater(new Runnable(){
 				    			// move piece for real in main thread
 				    			@Override

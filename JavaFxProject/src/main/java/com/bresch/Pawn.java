@@ -8,7 +8,7 @@ public class Pawn extends Piece {
 
 	private int moveDirections;
 	private BoardManager boardManager;
-	
+
 	public Pawn(int team, String kind, BoardManager boardManager) {
 		super(team, kind, boardManager);
 		this.boardManager = boardManager;
@@ -22,7 +22,8 @@ public class Pawn extends Piece {
 	}
 	
 	@Override
-	public ArrayList<String> moves(String locationString, HashMap<String, Piece> locationsLocal) {
+	public ArrayList<String> moves(String locationString, HashMap<String, Piece> locationsLocal, ArrayList<Integer> checked) {
+	Long timeStart = System.nanoTime();
 		ArrayList<String> validMoves = new ArrayList<>();
 		int[] loc = BoardManager.locationStringToArray(locationString);
 		int x = loc[0];
@@ -50,10 +51,18 @@ public class Pawn extends Piece {
 			if (x < 0 || x > 7)
 				continue;
 			moveString = x + " " + y;
-			if (boardManager.isPieceAtLocation(moveString, locationsLocal) && !boardManager.isFriendly(locationString, moveString, locationsLocal)) {
-				validMoves.add(moveString);
+			if (boardManager.isPieceAtLocation(moveString, locationsLocal)) {
+				if (!boardManager.isFriendly(locationString, moveString, locationsLocal)) {
+					validMoves.add(moveString);
+					if (checked.get(0) == 1 && locationsLocal.get(moveString).getKind().equals("king")) {
+						checked.set(1, 1);
+				}
+			} 
+				
 			}
 		}
+		Long timeEnd = System.nanoTime();
+		Piece.time += (timeEnd-timeStart);
 		return validMoves;
 	}
 	

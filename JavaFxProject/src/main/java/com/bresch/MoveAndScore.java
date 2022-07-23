@@ -32,31 +32,31 @@ counter = 0;
 		
 		
 		// setup, sorting enemy/friendly to get score from moves
-				ArrayList<String> whiteLocStrings = new ArrayList<>();
-				ArrayList<String> blackLocStrings = new ArrayList<>();
-					locations.keySet().stream().forEach(locStr -> {
-							if (locations.get(locStr).getTeam() == 0) {
-								whiteLocStrings.add(locStr);
-							} else {
-								blackLocStrings.add(locStr);
-							}
-				});
-				
-				HashMap<String, ArrayList<String>> validatedMovesWhite = new HashMap<>();
-				HashMap<String, ArrayList<String>> validatedMovesBlack = new HashMap<>();
-						boardManager.getValidatedMoves(locations, team, validatedMovesWhite, validatedMovesBlack);
-				
-			double whiteMoveScore = whiteLocStrings.stream().mapToDouble(locStr -> {
-				ArrayList<String> validMoveList = validatedMovesWhite.get(locStr);
-				if (validMoveList == null) return 0;
-				return validMoveList.size() * 0.1; 
-			}).sum();
-			double blackMoveScore = blackLocStrings.stream().mapToDouble(locStr -> {
-				ArrayList<String> validMoveList = validatedMovesBlack.get(locStr);
-				if (validMoveList == null) return 0;
-				return validMoveList.size() * -0.1; 
-			}).sum();
-		updateScore(boardManager.getScoreFromBoard(locations, whiteMoveScore + blackMoveScore));
+//				ArrayList<String> whiteLocStrings = new ArrayList<>();
+//				ArrayList<String> blackLocStrings = new ArrayList<>();
+//					locations.keySet().stream().forEach(locStr -> {
+//							if (locations.get(locStr).getTeam() == 0) {
+//								whiteLocStrings.add(locStr);
+//							} else {
+//								blackLocStrings.add(locStr);
+//							}
+//				});
+//				
+//				HashMap<String, ArrayList<String>> validatedMovesWhite = new HashMap<>();
+//				HashMap<String, ArrayList<String>> validatedMovesBlack = new HashMap<>();
+//						boardManager.getValidatedMoves(locations, team, validatedMovesWhite, validatedMovesBlack);
+//				
+//			double whiteMoveScore = whiteLocStrings.stream().mapToDouble(locStr -> {
+//				ArrayList<String> validMoveList = validatedMovesWhite.get(locStr);
+//				if (validMoveList == null) return 0;
+//				return validMoveList.size() * 0.1; 
+//			}).sum();
+//			double blackMoveScore = blackLocStrings.stream().mapToDouble(locStr -> {
+//				ArrayList<String> validMoveList = validatedMovesBlack.get(locStr);
+//				if (validMoveList == null) return 0;
+//				return validMoveList.size() * -0.1; 
+//			}).sum();
+//		updateScore(boardManager.getScoreFromBoard(locations, whiteMoveScore + blackMoveScore));
 	}
 	public ArrayList<String> getDecision(){
 		return new ArrayList<>(Arrays.asList(moveFrom, moveTo, String.valueOf(counter)));
@@ -81,6 +81,7 @@ counter = 0;
 	
 	// simulate ALL the enemy's moves and calculate points for that. Start there.
 	public double calculateScore(HashMap<String, Piece> originalLocations, int maxMovesLocal, int teamsTurn, double alpha, double beta) {
+		
 		HashMap<String, Piece> localLocations = new HashMap<>();
 	// create new clone locations
 		localLocations.putAll(originalLocations);
@@ -97,18 +98,22 @@ counter = 0;
 					}
 		});
 			
-//counter++;
+counter++;
 long timeStartValidateMoves = System.nanoTime();
+		
 		HashMap<String, ArrayList<String>> validatedMovesWhite = new HashMap<>();
 		HashMap<String, ArrayList<String>> validatedMovesBlack = new HashMap<>();
+		
+// getting moves is really heavy
 				boardManager.getValidatedMoves(localLocations, teamsTurn, validatedMovesWhite, validatedMovesBlack);
+
 // Is validatedMoves only supplying root teams turns moves? not local? also maybe supply all moves and filter here? to score easier.
 long timeEndValidateMoves = System.nanoTime();
 timeInValidatesMoveTotal += (timeEndValidateMoves - timeStartValidateMoves);
 
 // EXIT CASE
 if (maxMovesLocal < 1) {
-counter++;
+//counter++;
 //System.out.println("counter is now = ["+counter+"]");
 // return value of board sum with white pieces being positive and black negative.
 
@@ -122,7 +127,6 @@ counter++;
 		if (validMoveList == null) return 0;
 		return validMoveList.size() * -0.1; 
 	}).sum();
-	
 	return boardManager.getScoreFromBoard(localLocations, whiteMoveScore + blackMoveScore);
 }
 
@@ -135,6 +139,7 @@ counter++;
 			childScore = Integer.MIN_VALUE;
 			
 			for (String locStr : whiteLocStrings ) {
+
 				ArrayList<String> moveArray = validatedMovesWhite.get(locStr);
 				if (moveArray == null || moveArray.isEmpty()) {
 					continue;
@@ -143,19 +148,15 @@ counter++;
 				for (String moveStr : moveArray) {
 					HashMap<String, Piece> localLocationsCopy = new HashMap<>();
 					localLocationsCopy.putAll(localLocations);
-	//				if (localLocations.containsKey(moveStr)) {
-	////System.out.println("omg yes more score!");
-	////System.out.println("tring to get pos ["+moveStr+"] s from: \n" + newLocations.toString());
-	//					updateScore((teamsTurn == 0 ? 1 : -1) * boardManager.getScoreFromKind(localLocations.get(moveStr).getKind()));
-	//				}
 					
 		// Should this return ONLY ONE VALUE FOR THE LEAFNODE? 
 		// does this fuck up if we can't go to maximum depth? eg. not that many moves can be done since we loose?
 					
 					boardManager.movePiece(moveStr, locStr, localLocationsCopy, true);
 					childScore = Math.max(childScore, calculateScore(localLocationsCopy, maxMovesLocal-1, (teamsTurn == 0 ? 1 : 0), alpha, beta));
+					
 					alpha = Math.max(childScore, alpha);
-		                if (beta <= alpha) break;
+	                if (beta <= alpha) break;
 		                
 	/// this seems to work but it values checking too much and offers pieces that get instant captured 
     // eg. checking king with its queen. putting it within striking distance of king without "cover" from other pieces
@@ -178,12 +179,14 @@ counter++;
 					
 					boardManager.movePiece(moveStr, locStr, localLocationsCopy, true);
 					childScore = Math.min(childScore, calculateScore(localLocationsCopy, maxMovesLocal-1, (teamsTurn == 0 ? 1 : 0), alpha, beta));
+
 					beta = Math.min(childScore, beta);
-		                if (beta <= alpha) break;
+	                if (beta <= alpha) break;
 
 				}
 			}
 		}
+
 		return childScore;
 		
 		
