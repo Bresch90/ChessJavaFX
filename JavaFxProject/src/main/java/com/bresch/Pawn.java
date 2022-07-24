@@ -23,46 +23,96 @@ public class Pawn extends Piece {
 	
 	@Override
 	public ArrayList<String> moves(String locationString, HashMap<String, Piece> locationsLocal, ArrayList<Integer> checked) {
-	Long timeStart = System.nanoTime();
+long timeStart = System.nanoTime();
 		ArrayList<String> validMoves = new ArrayList<>();
-		int[] loc = BoardManager.locationStringToArray(locationString);
-		int x = loc[0];
-		int y = loc[1] + moveDirections;
-		String moveString = x + " " + y;
-		if (!boardManager.isPieceAtLocation(moveString, locationsLocal)) {
-			validMoves.add(moveString);
+//		int[] loc = BoardManager.locationStringToArray(locationString); // 11-12000ms
+//	String[] strArray = locationString.split(" ");
+//	int[] loc = {Integer.parseInt(strArray[0]), Integer.parseInt(strArray[1])}; // 11242ms
+	
+//	String[] strArray = locationString.split(" ");
+//	int[] loc = {Integer.parseInt(strArray[0]), Integer.parseInt(strArray[1])};
+	
+//	int locX = Integer.parseInt(strArray[0]); // 10000ms
+//	int locY = Integer.parseInt(strArray[1]);
+	
+	int locX = locationString.charAt(0)-'0'; // 1300ms!!!!!!
+	int locY = locationString.charAt(2)-'0';
+	
+		int x = locX;
+		int y = locY + moveDirections;
+		StringBuilder moveStringBuilder = new StringBuilder(3);
+//		StringBuilder moveStringBuilder = new StringBuilder();
+		moveStringBuilder.append((char) ('0'+ x));
+		moveStringBuilder.append(' ');
+		moveStringBuilder.append((char) ('0'+ y));
+		String moveStr = moveStringBuilder.toString();
+		
+		
+		if (!boardManager.isPieceAtLocation(moveStr, locationsLocal)) {
+			validMoves.add(moveStr);
 			if (getFirstMove()) {
 				// TODO check if this can be a problem when simulating more moves, that the piece doesn't get firstMove as true after first simulated move
 				// doesnt seem to be when testing but haven't verified
-				String moveString2 = x + " " + (y + moveDirections);
-				if (!boardManager.isPieceAtLocation(moveString2, locationsLocal)) {
-					validMoves.add(moveString2);
+				moveStringBuilder.setCharAt(2, (char) ('0'+ (y + moveDirections)));
+				moveStr = moveStringBuilder.toString();
+//				String moveString2 = x + " " + (y + moveDirections);
+				if (!boardManager.isPieceAtLocation(moveStr, locationsLocal)) {
+					validMoves.add(moveStr);
 				}
 			}
 		}
 
 		// TODO refactor this?
-		ArrayList<int[]> pawnAttackDirection = new ArrayList<int[]>(
-				Arrays.asList(new int[] { 1, moveDirections },
-						new int[] { -1, moveDirections }));
-		for (int[] attack : pawnAttackDirection) {
-			x = loc[0] + attack[0];
-			y = loc[1] + attack[1];
-			if (x < 0 || x > 7)
-				continue;
-			moveString = x + " " + y;
-			if (boardManager.isPieceAtLocation(moveString, locationsLocal)) {
-				if (!boardManager.isFriendly(locationString, moveString, locationsLocal)) {
-					validMoves.add(moveString);
-					if (checked.get(0) == 1 && locationsLocal.get(moveString).getKind().equals("king")) {
-						checked.set(1, 1);
-				}
-			} 
+
+//		ArrayList<int[]> pawnAttackDirection = new ArrayList<int[]>(
+//				Arrays.asList(new int[] { 1, moveDirections },
+//						new int[] { -1, moveDirections }));
+//		int attack1 = 1;
+//		int attack2 = -1;
+//		for (int[] attack : pawnAttackDirection) { // 23-26000ms
+			x = locX + 1;
+			y = locY + moveDirections;
+			
+			if (x > 0 || x < 7) {
 				
+//			moveString = x + " " + y;
+	
+				moveStringBuilder.setCharAt(0, (char) ('0'+ x));
+				moveStringBuilder.setCharAt(2, (char) ('0'+ y));
+				moveStr = moveStringBuilder.toString();
+				
+				if (boardManager.isPieceAtLocation(moveStr, locationsLocal)) {
+
+					if (!boardManager.isFriendly(locationString, moveStr, locationsLocal)) {
+						validMoves.add(moveStr);
+						if (checked.get(0) == 1 && locationsLocal.get(moveStr).getKind().equals("king")) {
+							checked.set(1, 1);
+						}
+					} 
+					
+				}
 			}
-		}
-		Long timeEnd = System.nanoTime();
-		Piece.time += (timeEnd-timeStart);
+
+			x = locX - 1;
+			if (x > 0 || x < 7) {
+				
+				moveStringBuilder.setCharAt(0, (char) ('0'+ x));
+				moveStr = moveStringBuilder.toString();
+//			moveString = x + " " + y;
+				if (boardManager.isPieceAtLocation(moveStr, locationsLocal)) {
+					if (!boardManager.isFriendly(locationString, moveStr, locationsLocal)) {
+						validMoves.add(moveStr);
+						if (checked.get(0) == 1 && locationsLocal.get(moveStr).getKind().equals("king")) {
+							checked.set(1, 1);
+						}
+					} 
+					
+				}
+			}
+//		}
+		
+long timeEnd = System.nanoTime();
+Piece.time += (timeEnd-timeStart);
 		return validMoves;
 	}
 	

@@ -126,14 +126,16 @@ private static long time;
 		return gameRound % 2;
 	}
 	public static int[] locationStringToArray(String locationString) {
-		return Arrays.stream(locationString.split(" ")).mapToInt(Integer::parseInt).toArray();
+		String[] strArray = locationString.split(" ");
+		int[] intArray = {Integer.parseInt(strArray[0]), Integer.parseInt(strArray[1])};
+		return intArray;
 	}
 	public boolean isFriendly(String loc1, String loc2, HashMap<String, Piece> locationsLocal) {
-		if (!locationsLocal.containsKey(loc1) || !locationsLocal.containsKey(loc2))
-			return true;
 		return locationsLocal.get(loc1).getTeam() == locationsLocal.get(loc2).getTeam();
 	}
 	public boolean isFriendly(String loc1, String loc2) {
+		if (!locations.containsKey(loc1) || !locations.containsKey(loc2))
+			return true;
 		return isFriendly(loc1, loc2, locations);
 	}
 	public boolean isPieceAtLocation(String locationString, HashMap<String, Piece> locationsLocal) {
