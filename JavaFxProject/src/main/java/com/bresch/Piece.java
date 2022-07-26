@@ -6,7 +6,7 @@ import java.util.HashMap;
 public abstract class Piece {
 protected static long time;
 	private BoardManager boardManager;
-	private int team;
+	protected int team;
 	private String kind;
 	private String imagePath;
 	private boolean firstMove;
@@ -66,7 +66,7 @@ protected static long time;
 	/////////////////////////////////////// Moves //////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public ArrayList<String> movesPiece(String locationString, ArrayList<int[]> moveDirections, int maxRange, HashMap<String, Piece> locationsLocal, ArrayList<Integer> checked) {
-		long timeStart = System.nanoTime();
+		long timeStart = System.nanoTime(); // 41-52000ms with original 30-40000ms with assigning Piece and targetPiece.
 		int locX = locationString.charAt(0)-'0';
 		int locY = locationString.charAt(2)-'0';
 		ArrayList<String> potentialMoves = new ArrayList<>();
@@ -75,13 +75,13 @@ protected static long time;
 		moveStringBuilder.append(' ');
 		moveStringBuilder.append('0');
 		for (int[] moveDirection : moveDirections) {
-			moveRecursion(moveStringBuilder, locationString, locX, locY, moveDirection, maxRange, potentialMoves, locationsLocal, checked);
+			moveRecursion(moveStringBuilder, locX, locY, moveDirection, maxRange, potentialMoves, locationsLocal, checked);
 		}
 		long timeEnd = System.nanoTime();
 		Piece.time += (timeEnd-timeStart);
 		return potentialMoves;
 	}
-	private void moveRecursion(StringBuilder moveStringBuilder, String locationString, int x, int y, int[] moveDirection, int maxRange, ArrayList<String> potentialMoves, HashMap<String, Piece> locationsLocal, ArrayList<Integer> checked) {
+	private void moveRecursion(StringBuilder moveStringBuilder, int x, int y, int[] moveDirection, int maxRange, ArrayList<String> potentialMoves, HashMap<String, Piece> locationsLocal, ArrayList<Integer> checked) {
 		x += moveDirection[0];
 		y += moveDirection[1];
 		if (maxRange == 0 || x < 0 || x > 7 || y < 0 || y > 7)
@@ -90,20 +90,21 @@ protected static long time;
 		moveStringBuilder.setCharAt(0, (char) ('0'+ x)); // faster than string = x + " " + y;
 		moveStringBuilder.setCharAt(2, (char) ('0'+ y));
 		String moveStr = moveStringBuilder.toString(); // 12-16000ms this way. instead of moveStringBuilder.toString() everywhere. 93000ms -> 73-82000ms first black move.
-		
-		if (boardManager.isPieceAtLocation(moveStr, locationsLocal)) {
-			if (boardManager.isFriendly(locationString, moveStr, locationsLocal)) {
+		Piece targetPiece = locationsLocal.get(moveStr);
+		if (targetPiece != null) {
+			if (team == targetPiece.getTeam()) {
 				return;
 			}
-			if (checked.get(0) == 1 && locationsLocal.get(moveStr).kind.equals("king")) {
-// if this is true, then there is enemy checking king
+			if (checked.get(0) == 1 && targetPiece.getKind().equals("king")) {
+// if this is true, then there is enemy checking current players king. Then this is not a valid move.
 				checked.set(1, 1);
 			}
 			
 			maxRange = 1;
 		}
+		
 		potentialMoves.add(moveStr);
-		moveRecursion(moveStringBuilder, locationString, x, y, moveDirection, maxRange - 1, potentialMoves, locationsLocal, checked);
+		moveRecursion(moveStringBuilder, x, y, moveDirection, maxRange - 1, potentialMoves, locationsLocal, checked);
 	}
 	public void moveSides(ArrayList<int[]> moveDirections) {
 		moveDirections.addAll(

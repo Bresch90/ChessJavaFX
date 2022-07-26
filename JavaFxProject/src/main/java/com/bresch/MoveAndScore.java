@@ -57,6 +57,7 @@ counter = 0;
 //				return validMoveList.size() * -0.1; 
 //			}).sum();
 //		updateScore(boardManager.getScoreFromBoard(locations, whiteMoveScore + blackMoveScore));
+///// this is only necessary for the leafnode to evaluate. only the end result matters.
 	}
 	public ArrayList<String> getDecision(){
 		return new ArrayList<>(Arrays.asList(moveFrom, moveTo, String.valueOf(counter)));

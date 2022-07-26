@@ -48,6 +48,7 @@ long timeStart = System.nanoTime();
 		String moveStr = moveStringBuilder.toString();
 		
 		
+		
 		if (!boardManager.isPieceAtLocation(moveStr, locationsLocal)) {
 			validMoves.add(moveStr);
 			if (getFirstMove()) {
@@ -80,12 +81,13 @@ long timeStart = System.nanoTime();
 				moveStringBuilder.setCharAt(0, (char) ('0'+ x));
 				moveStringBuilder.setCharAt(2, (char) ('0'+ y));
 				moveStr = moveStringBuilder.toString();
+				Piece targetPiece = locationsLocal.get(moveStr);
 				
-				if (boardManager.isPieceAtLocation(moveStr, locationsLocal)) {
+				if (targetPiece != null) {
 
-					if (!boardManager.isFriendly(locationString, moveStr, locationsLocal)) {
+					if (super.team != targetPiece.getTeam()) {
 						validMoves.add(moveStr);
-						if (checked.get(0) == 1 && locationsLocal.get(moveStr).getKind().equals("king")) {
+						if (checked.get(0) == 1 && targetPiece.getKind().equals("king")) {
 							checked.set(1, 1);
 						}
 					} 
@@ -98,11 +100,12 @@ long timeStart = System.nanoTime();
 				
 				moveStringBuilder.setCharAt(0, (char) ('0'+ x));
 				moveStr = moveStringBuilder.toString();
-//			moveString = x + " " + y;
-				if (boardManager.isPieceAtLocation(moveStr, locationsLocal)) {
-					if (!boardManager.isFriendly(locationString, moveStr, locationsLocal)) {
+				Piece targetPiece = locationsLocal.get(moveStr);
+				
+				if (targetPiece != null) {
+					if (super.team != targetPiece.getTeam()) {
 						validMoves.add(moveStr);
-						if (checked.get(0) == 1 && locationsLocal.get(moveStr).getKind().equals("king")) {
+						if (checked.get(0) == 1 && targetPiece.getKind().equals("king")) {
 							checked.set(1, 1);
 						}
 					} 

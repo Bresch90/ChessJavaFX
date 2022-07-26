@@ -83,12 +83,12 @@ public class Logic {
 			@Override
 			public void run(){
 				// only for running continuously, aka computer against itself else 1 loop
-				for (int i = 0; i < 1; i++) {
+				for (int i = 0; i < 1001; i++) {
 //		System.out.println("Pausing until enter");
 //		userInput.nextLine();
 //		System.out.println("Calculating");
 					CountDownLatch latch = new CountDownLatch(1);
-					if (opponentActive && boardManager.whosTurn() < 2) {
+					if (opponentActive && boardManager.whosTurn() > 0) {
 				        try {
 				        	ArrayList<String> decisions = opponent.makeDecision();       	
 				    		if (decisions.isEmpty()) {
