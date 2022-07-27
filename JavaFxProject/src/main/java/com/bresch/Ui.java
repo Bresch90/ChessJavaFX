@@ -165,9 +165,6 @@ public class Ui extends Application {
 	public void setCheck(boolean bool) {
 		check = bool; 
 	}
-	public boolean getCheck() {
-		return check;
-	}
 	public Button getButton(String locStr) {
 		int[] loc = BoardManager.locationStringToArray(locStr);
 		return buttons[loc[0]][loc[1]];

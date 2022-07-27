@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+
 //TODO undo move?
 //TODO save board?
 
@@ -13,8 +16,6 @@ public class BoardManager {
 private static long time;
 	private HashMap<String, Piece> locations;
 	private HashMap<String, ArrayList<String>> validMoves;
-	private String whiteKingLocation;
-	private String blackKingLocation;
 	private Ui ui;
 	private int gameRound;
 	private HashMap<String, Integer> scoreMap;
@@ -163,9 +164,6 @@ private static long time;
 	public HashMap<String, Piece> getLocations() {
 		return locations;
 	}
-	public String getkings() {
-		return "["+ whiteKingLocation + "] [" + blackKingLocation + "]";
-	}
 	public long getTime() {
 		return time;
 	}
@@ -191,7 +189,27 @@ private static long time;
 //System.out.println("moving piece:["+movingPiece.getKind() +"]from["+moveFrom+"]to["+moveTo+"]simulated["+simulated+"]");
 		locationsLocal.put(moveTo, movingPiece);
 		locationsLocal.remove(moveFrom);
-		if (!simulated) movingPiece.setFirstMove();
+	// only setFirstMove if its moving for real and not simulated.
+	// also put castling here to not impact performance too much and mess up code..feel finished with the project anyways
+	// and will not implement enpassant.
+		if (!simulated && movingPiece.getFirstMove()) {
+			if (movingPiece.getKind().equals("king")) {
+				if (moveTo.equals("2 0")) {
+					movePiece("3 0", "0 0");
+					ui.getButton("0 0").setGraphic(null);
+				} else if (moveTo.equals("6 0")) {
+					movePiece("5 0", "7 0");
+					ui.getButton("7 0").setGraphic(null);
+				} else if (moveTo.equals("2 7")) {
+					movePiece("3 7", "0 7");
+					ui.getButton("0 7").setGraphic(null);
+				} else if (moveTo.equals("6 7")) {
+					movePiece("5 7", "7 7");
+					ui.getButton("7 7").setGraphic(null);
+				}
+			}
+			movingPiece.setFirstMove();
+		}
 	}
 	
 	public void movePiece(String locationString1, String locationString2) {
@@ -335,11 +353,14 @@ long timeStart = System.nanoTime();
 long timeStart = System.nanoTime();
 	// when checked.get(0) == 1 it checks in piece.moves() if the target of an attack is the king. Then that moveseries is checking the other player.
 		//update king locations and ask the piece how it can potentially move
+		String whiteKingLocation = null;
+		String blackKingLocation = null;
+
 		for (String locationString : locationsLocal.keySet()) {
 			Piece piece = locationsLocal.get(locationString);
 			int teamOfPiece = piece.getTeam();
-			if (teamOfPiece == 0) {
-				if (piece.getKind().equals("king")) {
+			if (piece.getKind().equals("king")) {
+				if (teamOfPiece == 0) {
 					whiteKingLocation = locationString;
 				} else {
 					blackKingLocation = locationString;
@@ -366,8 +387,46 @@ long timeStart = System.nanoTime();
 					potentialMovesBlack.put(locationString, moves);
 				}
 			}
-			
 		}
+		// shitty castling implementation 										// before it was 47-57000ms in potentialMoves // after it was 55-61000ms
+		// if not from isThereCheck then check if castling is a valid move.
+		if (checked.get(0) == 0) {
+			// current players move
+			if (checked.get(2) == 0) {
+				if (locationsLocal.get(whiteKingLocation).getFirstMove()) {
+					Piece leftRook = locationsLocal.get("0 0");
+					Piece rightRook = locationsLocal.get("7 0");
+					if (leftRook != null && leftRook.getFirstMove() && leftRook.getKind().equals("rook")) {
+						if (potentialMovesWhite.get("0 0").contains("3 0")) {
+							potentialMovesWhite.get(whiteKingLocation).add("2 0");
+						}
+					}
+					if (rightRook != null && rightRook.getFirstMove() && rightRook.getKind().equals("rook")) {
+						if (potentialMovesWhite.get("7 0").contains("5 0")) {
+							potentialMovesWhite.get(whiteKingLocation).add("6 0");
+						}
+					}
+					
+				}
+			} else {
+				if (locationsLocal.get(blackKingLocation).getFirstMove()) {
+					Piece leftRook = locationsLocal.get("0 7");
+					Piece rightRook = locationsLocal.get("7 7");
+					if (leftRook != null && leftRook.getFirstMove() && leftRook.getKind().equals("rook")) {
+						if (potentialMovesBlack.get("0 7").contains("3 7")) {
+							potentialMovesBlack.get(blackKingLocation).add("2 7");
+						}
+					}
+					if (rightRook != null && rightRook.getFirstMove() && rightRook.getKind().equals("rook")) {
+						if (potentialMovesBlack.get("7 7").contains("5 7")) {
+							potentialMovesBlack.get(blackKingLocation).add("6 7");
+						}
+					}
+				}
+			}
+		}
+		
+		
 long timeEnd = System.nanoTime();
 timeInGetPotentialMoves = timeEnd - timeStart;
 	}
