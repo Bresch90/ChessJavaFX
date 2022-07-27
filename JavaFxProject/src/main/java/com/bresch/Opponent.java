@@ -2,23 +2,19 @@ package com.bresch;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Opponent {
 	private BoardManager boardManager;
-	private Ui ui;
 	private int maxMoves;
 	private int teamsTurn;
 private Random random;
 	
-	public Opponent(BoardManager boardManager, Ui ui) {
+	public Opponent(BoardManager boardManager) {
 		this.boardManager = boardManager;
-		this.ui = ui;
-this.maxMoves = 4;
+this.maxMoves = 3;
 this.random = new Random();
 	}
 

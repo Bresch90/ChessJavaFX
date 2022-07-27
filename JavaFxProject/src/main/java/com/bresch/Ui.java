@@ -2,8 +2,6 @@ package com.bresch;
 
 import java.util.ArrayList;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
@@ -196,7 +194,7 @@ public class Ui extends Application {
 	public void resetColours() {
 		for (int i = 0, c = 1; i < buttons.length; i++) {
 			for (int j = 0; j < buttons[i].length; j++) {
-				buttons[i][j].setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white") ); // + "; -fx-text-fill: transparent");
+				buttons[i][j].setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white") + "; -fx-text-fill: transparent");
 				String locationString = String.valueOf(i) + " " + String.valueOf(j);
 				if (boardManager.isPieceAtLocation(locationString)) {
 					ImageView imageView = new ImageView(new Image(boardManager.getPiece(locationString).getImagePath()));

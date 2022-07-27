@@ -9,7 +9,7 @@ public class Queen extends Piece{
 	private int maxRange;
 	
 	public Queen(int team, String kind, BoardManager boardManager) {
-		super(team, kind, boardManager);
+		super(team, kind);
 		this.moveDirections = new ArrayList<>();
 		super.moveDiagonally(moveDirections);
 		super.moveSides(moveDirections);

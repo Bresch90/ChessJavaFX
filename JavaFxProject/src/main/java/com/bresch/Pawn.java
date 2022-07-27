@@ -1,7 +1,6 @@
 package com.bresch;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class Pawn extends Piece {
@@ -10,7 +9,7 @@ public class Pawn extends Piece {
 	private BoardManager boardManager;
 
 	public Pawn(int team, String kind, BoardManager boardManager) {
-		super(team, kind, boardManager);
+		super(team, kind);
 		this.boardManager = boardManager;
 		// Pawns can only move forward, white up, black down.
 		this.moveDirections = (team == 0 ? 1 : -1);

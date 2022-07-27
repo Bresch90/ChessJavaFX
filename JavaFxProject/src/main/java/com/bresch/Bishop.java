@@ -9,7 +9,7 @@ public class Bishop extends Piece {
 	private int maxRange;
 	
 	public Bishop(int team, String kind, BoardManager boardManager) {
-		super(team, kind, boardManager);
+		super(team, kind);
 		this.moveDirections = new ArrayList<>();
 		super.moveDiagonally(moveDirections);
 		this.maxRange = 7;

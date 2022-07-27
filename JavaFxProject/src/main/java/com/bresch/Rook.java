@@ -1,7 +1,6 @@
 package com.bresch;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class Rook extends Piece {
@@ -10,7 +9,7 @@ public class Rook extends Piece {
 	private int maxRange;
 	
 	public Rook(int team, String kind, BoardManager boardManager) {
-		super(team, kind, boardManager);
+		super(team, kind);
 		this.moveDirections = new ArrayList<>();
 		super.moveSides(moveDirections);
 		this.maxRange = 7;

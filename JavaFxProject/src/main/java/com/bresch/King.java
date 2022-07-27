@@ -9,7 +9,7 @@ public class King extends Piece{
 	private int maxRange;
 	
 	public King(int team, String kind, BoardManager boardManager) {
-		super(team, kind, boardManager);
+		super(team, kind);
 		this.moveDirections = new ArrayList<>();
 		super.moveDiagonally(moveDirections);
 		super.moveSides(moveDirections);

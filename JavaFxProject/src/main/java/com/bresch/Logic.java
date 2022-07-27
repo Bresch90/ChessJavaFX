@@ -22,7 +22,7 @@ public class Logic {
 	public Logic(Ui ui, BoardManager boardManager) {
 		this.ui = ui;
 		this.boardManager = boardManager;
-		this.opponent = new Opponent(boardManager, ui);
+		this.opponent = new Opponent(boardManager);
 		this.opponentActive = true;
 	}
 	

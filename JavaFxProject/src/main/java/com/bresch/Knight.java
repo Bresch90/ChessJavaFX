@@ -10,7 +10,7 @@ public class Knight extends Piece {
 	private int maxRange;
 	
 	public Knight(int team, String kind, BoardManager boardManager) {
-		super(team, kind, boardManager);
+		super(team, kind);
 		this.moveDirections = new ArrayList<>();
 		moveKnight(moveDirections);
 		this.maxRange = 1;

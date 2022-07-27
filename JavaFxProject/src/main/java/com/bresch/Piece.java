@@ -5,18 +5,16 @@ import java.util.HashMap;
 
 public abstract class Piece {
 protected static long time;
-	private BoardManager boardManager;
 	protected int team;
 	private String kind;
 	private String imagePath;
 	private boolean firstMove;
 	
 	
-	public Piece(int team, String kind, BoardManager boardManager) {
+	public Piece(int team, String kind) {
 		this.firstMove = true;
 		this.team = team;
 		String color = (team == 0 ? "l" : "d");
-		this.boardManager = boardManager;
 
 		
 		//Determining the kind and imagefile to use
