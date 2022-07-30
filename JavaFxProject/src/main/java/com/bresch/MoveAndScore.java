@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 public class MoveAndScore {
 static int counter = 0;
-static long timeInValidatesMoveTotal = 0;
 	private BoardManager boardManager;
 	private HashMap<String, Piece> locations;
 	private int team;
@@ -19,45 +18,15 @@ static long timeInValidatesMoveTotal = 0;
 	public MoveAndScore(BoardManager boardManager, int team, int maxMoves, String moveFrom, String moveTo) {
 counter = 0;
 		this.boardManager = boardManager;
-		// or this.locations = new HashMap<>(); + locations.putAll();
 		this.locations = new HashMap<>();
 		locations.putAll(boardManager.getLocations());
 		this.team = team;
 		this.moveFrom = moveFrom;
 		this.moveTo = moveTo;
 		score = 0;
-		// simulate the move and add point if any
 		this.maxMoves = maxMoves -1;
+		// making the firstmove when its created since each move get a different object.
 		boardManager.movePiece(moveTo, moveFrom, locations, true);
-		
-		
-		// setup, sorting enemy/friendly to get score from moves
-//				ArrayList<String> whiteLocStrings = new ArrayList<>();
-//				ArrayList<String> blackLocStrings = new ArrayList<>();
-//					locations.keySet().stream().forEach(locStr -> {
-//							if (locations.get(locStr).getTeam() == 0) {
-//								whiteLocStrings.add(locStr);
-//							} else {
-//								blackLocStrings.add(locStr);
-//							}
-//				});
-//				
-//				HashMap<String, ArrayList<String>> validatedMovesWhite = new HashMap<>();
-//				HashMap<String, ArrayList<String>> validatedMovesBlack = new HashMap<>();
-//						boardManager.getValidatedMoves(locations, team, validatedMovesWhite, validatedMovesBlack);
-//				
-//			double whiteMoveScore = whiteLocStrings.stream().mapToDouble(locStr -> {
-//				ArrayList<String> validMoveList = validatedMovesWhite.get(locStr);
-//				if (validMoveList == null) return 0;
-//				return validMoveList.size() * 0.1; 
-//			}).sum();
-//			double blackMoveScore = blackLocStrings.stream().mapToDouble(locStr -> {
-//				ArrayList<String> validMoveList = validatedMovesBlack.get(locStr);
-//				if (validMoveList == null) return 0;
-//				return validMoveList.size() * -0.1; 
-//			}).sum();
-//		updateScore(boardManager.getScoreFromBoard(locations, whiteMoveScore + blackMoveScore));
-///// this is only necessary for the leafnode to evaluate. only the end result matters.
 	}
 	public ArrayList<String> getDecision(){
 		return new ArrayList<>(Arrays.asList(moveFrom, moveTo, String.valueOf(counter)));
@@ -73,9 +42,6 @@ counter = 0;
 		return moveFrom + " -> " + moveTo + " [" + score + "]";
 	}
 	
-	public long getTimeValidateMoves() {
-		return timeInValidatesMoveTotal;
-	}
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////// Recursive minimax ////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,9 +54,10 @@ counter = 0;
 		localLocations.putAll(originalLocations);
 
 	// setup, sorting enemy/friendly
+		// maybe this loop is unnecessary? maybe everything should just be one giant loop 
+		// and first check what team location belongs to?
 		ArrayList<String> whiteLocStrings = new ArrayList<>();
 		ArrayList<String> blackLocStrings = new ArrayList<>();
-//System.out.println("team is now = ["+team+"]" + "maxMovesLocal is now = ["+maxMovesLocal+"]" +"teamsTurn is then = ["+teamsTurn+"]");
 			localLocations.keySet().stream().forEach(locStr -> {
 					if (localLocations.get(locStr).getTeam() == 0) {
 						whiteLocStrings.add(locStr);
@@ -100,7 +67,6 @@ counter = 0;
 		});
 			
 counter++;
-long timeStartValidateMoves = System.nanoTime();
 		
 		HashMap<String, ArrayList<String>> validatedMovesWhite = new HashMap<>();
 		HashMap<String, ArrayList<String>> validatedMovesBlack = new HashMap<>();
@@ -108,16 +74,9 @@ long timeStartValidateMoves = System.nanoTime();
 // getting moves is really heavy
 				boardManager.getValidatedMoves(localLocations, teamsTurn, validatedMovesWhite, validatedMovesBlack);
 
-// Is validatedMoves only supplying root teams turns moves? not local? also maybe supply all moves and filter here? to score easier.
-long timeEndValidateMoves = System.nanoTime();
-timeInValidatesMoveTotal += (timeEndValidateMoves - timeStartValidateMoves);
-
 // EXIT CASE
 if (maxMovesLocal < 1) {
-//counter++;
-//System.out.println("counter is now = ["+counter+"]");
 // return value of board sum with white pieces being positive and black negative.
-
 	double whiteMoveScore = whiteLocStrings.stream().mapToDouble(locStr -> {
 		ArrayList<String> validMoveList = validatedMovesWhite.get(locStr);
 		if (validMoveList == null) return 0;
@@ -150,18 +109,11 @@ if (maxMovesLocal < 1) {
 					HashMap<String, Piece> localLocationsCopy = new HashMap<>();
 					localLocationsCopy.putAll(localLocations);
 					
-		// Should this return ONLY ONE VALUE FOR THE LEAFNODE? 
-		// does this fuck up if we can't go to maximum depth? eg. not that many moves can be done since we loose?
-					
 					boardManager.movePiece(moveStr, locStr, localLocationsCopy, true);
 					childScore = Math.max(childScore, calculateScore(localLocationsCopy, maxMovesLocal-1, (teamsTurn == 0 ? 1 : 0), alpha, beta));
 					
 					alpha = Math.max(childScore, alpha);
 	                if (beta <= alpha) break;
-		                
-	/// this seems to work but it values checking too much and offers pieces that get instant captured 
-    // eg. checking king with its queen. putting it within striking distance of king without "cover" from other pieces
-				
 				}
 			}
 		} else {

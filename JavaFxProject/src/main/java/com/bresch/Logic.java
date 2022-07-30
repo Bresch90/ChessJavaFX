@@ -1,7 +1,6 @@
 package com.bresch;
 
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.util.concurrent.CountDownLatch;
 
 import javafx.application.Platform;
@@ -43,7 +42,7 @@ public class Logic {
         Dragboard db = button.startDragAndDrop(TransferMode.MOVE);
         //db.setDragView(button.snapshot(null, null));
         db.setDragView(new Image(boardManager.getPiece(locationString).getImagePath()));
-        ////why is this needed?////
+        ////why is this needed???////
         ClipboardContent cc = new ClipboardContent();
         cc.putString("");
         db.setContent(cc);
@@ -77,18 +76,17 @@ public class Logic {
 	}
 	
 	// Separate thread for opponent so ui can continue running
+	// did not really get implemented correctly..my thought was getting a counter in a label updating as
+	// often as possible to show that the computer is calculating moves and show how many moves it's currently calculated.
 	public void runOpponent() {
-		Scanner userInput = new Scanner(System.in);
         Thread opponentThread = new Thread(new Runnable() {
 			@Override
 			public void run(){
 				// only for running continuously, aka computer against itself else 1 loop
-				for (int i = 0; i < 1001; i++) {
-//		System.out.println("Pausing until enter");
-//		userInput.nextLine();
-//		System.out.println("Calculating");
+				for (int i = 0; i < 1; i++) {
 					CountDownLatch latch = new CountDownLatch(1);
-					if (opponentActive && boardManager.whosTurn() > 0) {
+					// I can't remember why I did boardManager.whosTurn() > -1 but if it's 0, it ignores the loop for 1001 move??..
+					if (opponentActive && boardManager.whosTurn() > -1) {
 				        try {
 				        	ArrayList<String> decisions = opponent.makeDecision();       	
 				    		if (decisions.isEmpty()) {
@@ -97,38 +95,25 @@ public class Logic {
 				    		}
 				    		Button draggingButton = ui.getButton(decisions.get(0));
 				    		Button targetButton = ui.getButton(decisions.get(1));
-System.out.println("Number of moves calculated ["+decisions.get(2)+"]");
-//long timeInMoveGenerationOfPiece = boardManager.getLocations().get("2 1").getTime();
-//System.out.println("Total time in move of Piece [" + timeInMoveGenerationOfPiece/1000000 + "]");
-long timeInBoardManagerIsThereCheck = boardManager.getTime();
-System.out.println("Total time in isThereCheck  [" + timeInBoardManagerIsThereCheck/1000000 + "ms]");
-long timeInBoardManagerGetPotentialMovesTotal = boardManager.getTime();
-System.out.println("Total time in getPotentialMovesTotal  [" + timeInBoardManagerGetPotentialMovesTotal/1000000 + "ms]");
-long timeInPieceMoveRecursion = Piece.time;
-System.out.println("Total time in timeInPieceMoveRecursion  [" + timeInPieceMoveRecursion/1000000 + "ms]");
 
 				    		Platform.runLater(new Runnable(){
 				    			// move piece for real in main thread
 				    			@Override
 				    			public void run() {
-//System.out.println("I am RunLater");
 				    				if (onDragDropped(draggingButton, targetButton)) {
-//System.out.println("It was true? why wait?");
 				    					latch.countDown();
 				    				} else {
-//System.out.println("It was false [" + draggingButton.getText() + "] to button ["+targetButton.getText()+"]");
+System.out.println("It was false, this should never happen! [" + draggingButton.getText() + "] to button ["+targetButton.getText()+"]");
 				    				}
 				    				
 				    			}
 				    		});
 							latch.await();
-//System.out.println("DONE WAITING");
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
 					}
 				}
-				userInput.close();
 			}
         	
         });

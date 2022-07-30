@@ -17,7 +17,7 @@ public class Queen extends Piece{
 	}
 	
 	@Override
-	public ArrayList<String> moves(String locationString, HashMap<String, Piece> locationsLocal, ArrayList<Integer> checked) {
+	public ArrayList<String> moves(String locationString, HashMap<String, Piece> locationsLocal, int[] checked) {
 		return super.movesPiece(locationString, moveDirections, maxRange, locationsLocal, checked);
 	}
 

@@ -35,6 +35,7 @@ public class Ui extends Application {
 		System.out.println("hello");
 		launch();
 	}
+	// ignore comments in this class please. Tried getting resizing to work properly but gave up :( leaving the comments for if I pick it up again.
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////// Setup /////////////////////////////////////////////////////////////////////
@@ -103,6 +104,7 @@ public class Ui extends Application {
 				//TODO uncomment Transparency for location text
 				button.setStyle("-fx-background-color: " + (c % 2 == 0 ? "#857135" : "white") + "; -fx-text-fill: transparent");
 				//TODO Make resizable pls...
+				// tried for a long while to get it working with resizable but couldn't figure it out..gave up :( leaving some of the comments for future prosperity.
 				button.setMinSize(60, 60);
 //			    buttons[i][j].setPrefSize(scene.getWidth()/8, scene.getHeight()/8);
 				button.setMaxSize(60, 60);
